@@ -9,6 +9,7 @@ import java.io.IOException;
 public class GitService {
 
     public static final String LOCAL_PATH = "/Users/martinbaumer/proj/gitrepo/covid-test-dir";
+    public static final String DATA_PATH = "/csse_covid_19_data/csse_covid_19_daily_reports/";
 
     public void cloneRepository() throws GitAPIException {
         Git git = Git.cloneRepository()

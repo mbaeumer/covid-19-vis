@@ -47,7 +47,7 @@ Hubei,Mainland China,2020-02-21T13:03:09,62662,2144,11881
     public void shouldHandleLongRow(){
         final String countryData="45001,Abbeville,South Carolina,US,2020-03-27 22:14:55,34.22333378,-82.46170658,4,0,0,0,\"Abbeville, South Carolina, US\"";
         CsvDataRow row = CsvRowParser.parseCsvString(countryData);
-        Assert.assertNull(row.getProvince());
+        Assert.assertTrue("South Carolina".equals(row.getProvince()));
         Assert.assertTrue("US".equals(row.getCountry()));
         Assert.assertNotNull(row.getLastUpdated());
         Assert.assertEquals(row.getConfirmed(), 4);
@@ -56,13 +56,5 @@ Hubei,Mainland China,2020-02-21T13:03:09,62662,2144,11881
     }
     // FIPS,Admin2,Province_State,Country_Region,Last_Update,Lat,Long_,Confirmed,Deaths,Recovered,Active,Combined_Key
     // 45001,Abbeville,South Carolina,US,2020-03-27 22:14:55,34.22333378,-82.46170658,4,0,0,0,"Abbeville, South Carolina, US"
-
-    @Test
-    public void testDateParse(){
-        LocalDateTime localDateTime = CsvRowParser.parseDateString("2020-03-27 22:14:55");
-        System.out.println("test");
-
-    }
-
 
 }

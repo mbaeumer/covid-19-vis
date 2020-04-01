@@ -17,6 +17,7 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class FXLink extends Application{
 
@@ -46,7 +47,7 @@ public class FXLink extends Application{
 	
 	public void initLayout() {
 		this.gitService = new GitService();
-		this.csvReader = new CsvReader();
+		this.csvReader = new CsvReader(new DirectoryService());
 		this.dataFilterService = new DataFilterService();
 		this.createGeneralFlowPane();
 		this.createCloneButton();
@@ -103,12 +104,17 @@ public class FXLink extends Application{
 	private void createVisualizeButton(){
 		this.btnVisualize = new Button("Visualize");
 		this.btnVisualize.setOnAction(actionEvent -> {
-			csvReader.readCsvFile(GitService.LOCAL_PATH + "/"
-					+ "csse_covid_19_data/csse_covid_19_daily_reports/" + "03-27-2020.csv");
+			csvReader.readMultipleCsvFiles(GitService.LOCAL_PATH + GitService.DATA_PATH);
+			Map dataMap = csvReader.getDataMap();
+			lblInfo.setText("Successfully read data: " + dataMap.size());
+			/*
+			csvReader.readSingleCsvFile(GitService.LOCAL_PATH + GitService.DATA_PATH
+					 + "03-27-2020.csv");
 			List<CsvDataRow> dataRows = csvReader.getCsvDataRowList();
 			dataRows = dataFilterService.getCountriesWithoutProvinces(dataRows);
 			createGraph(dataRows);
 			lblInfo.setText("Successfully read data: " + dataRows.size());
+			*/
 		});
 		//final LineChart
 		this.flowGeneral.getChildren().add(this.btnVisualize);

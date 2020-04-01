@@ -1,7 +1,6 @@
 package se.mbaeumer.covid19vis;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class CsvRowParser {
@@ -39,11 +38,5 @@ public class CsvRowParser {
 
         return row;
 
-    }
-
-    public static LocalDateTime parseDateString(final String date){
-        //DateTimeFormatter.BASIC_ISO_DATE
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return LocalDateTime.parse(date, dtf);
     }
 }
