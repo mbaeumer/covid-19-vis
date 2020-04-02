@@ -8,6 +8,8 @@ public class RowParserFactory {
             return new USFipsParser();
         }else if (csvData.contains("Mainland China")){
             return new ChineseProvinceParser();
+        }else if (csvData.startsWith(",,,")){
+            return new EuropeFipsParser();
         }else if (csvData.startsWith(",")){
             return new CountryParser();
         }
