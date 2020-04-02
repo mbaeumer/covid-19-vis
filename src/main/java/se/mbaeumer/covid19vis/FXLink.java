@@ -17,7 +17,6 @@ import org.eclipse.jgit.api.errors.JGitInternalException;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public class FXLink extends Application{
 
@@ -105,16 +104,16 @@ public class FXLink extends Application{
 		this.btnVisualize = new Button("Visualize");
 		this.btnVisualize.setOnAction(actionEvent -> {
 			csvReader.readMultipleCsvFiles(GitService.LOCAL_PATH + GitService.DATA_PATH);
-			Map dataMap = csvReader.getDataMap();
-			lblInfo.setText("Successfully read data: " + dataMap.size());
+			//Map dataMap = csvReader.getDataMap();
+			//lblInfo.setText("Successfully read data: " + dataMap.size());
 			/*
 			csvReader.readSingleCsvFile(GitService.LOCAL_PATH + GitService.DATA_PATH
 					 + "03-27-2020.csv");
+					 */
 			List<CsvDataRow> dataRows = csvReader.getCsvDataRowList();
-			dataRows = dataFilterService.getCountriesWithoutProvinces(dataRows);
+			dataRows = dataFilterService.getDataForCountry(dataRows, "Sweden");//getCountriesWithoutProvinces(dataRows);
 			createGraph(dataRows);
 			lblInfo.setText("Successfully read data: " + dataRows.size());
-			*/
 		});
 		//final LineChart
 		this.flowGeneral.getChildren().add(this.btnVisualize);
@@ -129,8 +128,8 @@ public class FXLink extends Application{
 
 		XYChart.Series series1 = new XYChart.Series();
 
-		for (int i=0; i<30; i++){
-			series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getConfirmed()));
+		for (int i=0; i<csvDataRows.size(); i++){
+			series1.getData().add(new XYChart.Data(csvDataRows.get(i).getLastUpdated().toString(), csvDataRows.get(i).getConfirmed()));
 		}
 		series1.setName("Confirmed COVID-19 cases 2020-03-27");
 		/*

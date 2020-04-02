@@ -1,0 +1,111 @@
+package se.mbaeumer.covid19vis;
+
+import java.time.format.DateTimeParseException;
+
+public class CsvRowParser {
+    public static CsvDataRow parseCsvString(final String csvData) throws DateTimeParseException {
+        if (csvData == null){
+            throw new IllegalArgumentException("Could not parse csv row");
+        }
+
+        CsvDataRow row = new CsvDataRow();
+        DateParser dateParser = new DateParser();
+
+        String[] attributes = csvData.split(",");
+
+        if (attributes.length == 4){
+            row.setProvince(attributes[0]);
+            row.setCountry(attributes[1]);
+            row.setLastUpdated(dateParser.parseDateString(attributes[2]));
+            row.setConfirmed(getInteger(attributes[3]));
+        }else if (attributes.length >= 6 && attributes.length < 9) {
+
+            if (attributes[0].length() > 0) {
+                row.setProvince(attributes[0]);
+            }
+            if (hasCountryTwoWordsLargerNine(attributes)){
+                row.setCountry(handleCountryLargerNine(attributes));
+                row.setLastUpdated(dateParser.parseDateString(attributes[3]));
+                row.setConfirmed(getInteger(attributes[4]));
+                row.setDeaths(getInteger(attributes[5]));
+                row.setRecovered(getInteger(attributes[6]));
+            }else{
+                row.setCountry(attributes[1]);
+                row.setLastUpdated(dateParser.parseDateString(attributes[2]));
+                row.setConfirmed(getInteger(attributes[3]));
+                row.setDeaths(getInteger(attributes[4]));
+                row.setRecovered(getInteger(attributes[5]));
+            }
+
+        }else if (attributes.length == 9){
+            if (attributes[0].length() > 0) {
+                row.setProvince(attributes[0]);
+            }
+
+            // ",\"Korea, South\",2020-03-21T11:13:12,8799,102,1540,35.9078,127.7669";
+            if (hasCountryTwoWordsEqualsNine(attributes)){
+                row.setCountry(handleCountryEqualsNine(attributes));
+                row.setLastUpdated(dateParser.parseDateString(attributes[3]));
+                row.setConfirmed(getInteger(attributes[4]));
+                row.setDeaths(getInteger(attributes[5]));
+                row.setRecovered(getInteger(attributes[6]));
+            }else{
+
+            }
+        }else if (attributes.length > 9){
+            // 45001,Abbeville,South Carolina,US,2020-03-27 22:14:55,34.22333378,-82.46170658,4,0,0,0,"Abbeville, South Carolina, US"
+            if (attributes[2].length() > 0) {
+                row.setProvince(attributes[2]);
+            }
+
+            if (hasCountryTwoWordsLargerNine(attributes)){
+                row.setCountry(handleCountryLargerNine(attributes));
+                row.setLastUpdated(dateParser.parseDateString(attributes[5]));
+                row.setConfirmed(getInteger(attributes[8]));
+                row.setDeaths(getInteger(attributes[9]));
+                row.setRecovered(getInteger(attributes[10]));
+            }else {
+                row.setCountry(attributes[3]);
+                row.setLastUpdated(dateParser.parseDateString(attributes[4]));
+                row.setConfirmed(getInteger(attributes[7]));
+                row.setDeaths(getInteger(attributes[8]));
+                row.setRecovered(getInteger(attributes[9]));
+            }
+        }
+
+        return row;
+
+    }
+
+    private static int getInteger(final String numberString){
+        return numberString == null || numberString.length() == 0 ? 0 : Integer.parseInt(numberString);
+    }
+
+    private static String handleCountryLargerNine(final String[] attributes){
+        String result = attributes[3];
+        if (attributes[3].startsWith("\"") && attributes[4].endsWith("\"")){
+            result =  attributes[4] + " " + attributes[3];
+            result = result.replace("\"", "");
+            result = result.stripLeading();
+        }
+        return result;
+    }
+
+    private static String handleCountryEqualsNine(final String[] attributes){
+        String result = attributes[1];
+        if (attributes[1].startsWith("\"") && attributes[2].endsWith("\"")){
+            result =  attributes[2] + " " + attributes[1];
+            result = result.replace("\"", "");
+            result = result.stripLeading();
+        }
+        return result;
+    }
+
+    private static boolean hasCountryTwoWordsLargerNine(final String[] attributes){
+        return attributes[3].startsWith("\"") && attributes[4].endsWith("\"");
+    }
+
+    private static boolean hasCountryTwoWordsEqualsNine(final String[] attributes){
+        return attributes[1].startsWith("\"") && attributes[2].endsWith("\"");
+    }
+}

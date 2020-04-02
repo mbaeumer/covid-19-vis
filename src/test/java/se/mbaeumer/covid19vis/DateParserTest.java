@@ -36,5 +36,41 @@ public class DateParserTest {
         Assert.assertEquals(2020, ldt.getYear());
     }
 
+    @Test
+    public void parseDateStringWithoutSeconds() {
 
+        DateParser dateParser = new DateParser();
+        LocalDateTime ldt = dateParser.parseDateString("12/27/20 22:14");
+        Assert.assertEquals(27, ldt.getDayOfMonth());
+        Assert.assertEquals(12, ldt.getMonthValue());
+        Assert.assertEquals(2020, ldt.getYear());
+    }
+
+    @Test
+    public void parseDateStringWithFourDigitsYearWithoutSeconds() {
+
+        DateParser dateParser = new DateParser();
+        LocalDateTime ldt = dateParser.parseDateString("12/27/2020 22:14");
+        Assert.assertEquals(27, ldt.getDayOfMonth());
+        Assert.assertEquals(12, ldt.getMonthValue());
+        Assert.assertEquals(2020, ldt.getYear());
+    }
+
+    @Test
+    public void parseDateStringWithSingleDigitsHour() {
+
+        DateParser dateParser = new DateParser();
+        LocalDateTime ldt = dateParser.parseDateString("12/27/2020 8:14");
+        Assert.assertEquals(27, ldt.getDayOfMonth());
+        Assert.assertEquals(12, ldt.getMonthValue());
+        Assert.assertEquals(2020, ldt.getYear());
+    }
+    public void matchesYearWithTwoDigits() {
+        DateParser dateParser = new DateParser();
+        Assert.assertTrue(dateParser.matchesYearWithTwoDigits("12/27/20 00:00:00"));
+    }
+
+    @Test
+    public void matchesYearWithFourDigits() {
+    }
 }

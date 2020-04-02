@@ -1,5 +1,8 @@
 package se.mbaeumer.covid19vis;
 
+import se.mbaeumer.covid19vis.parser.RowParser;
+import se.mbaeumer.covid19vis.parser.RowParserFactory;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -20,6 +23,7 @@ public class CsvReader {
     }
 
     private Map dataMap = new HashMap<String, List<CsvDataRow>>();
+    private int parseErrors = 0;
 
     public CsvReader(final DirectoryService directoryService) {
         this.directoryService = directoryService;
@@ -30,28 +34,33 @@ public class CsvReader {
     }
 
     public void readMultipleCsvFiles(final String path){
-        List<String> filnames = directoryService.getAllCsvFilenames(path);
+        List<String> filenames = directoryService.getAllCsvFilenames(path);
+        csvDataRowList = new ArrayList<>();
 
-        for (int i=0;i<filnames.size(); i++){
-            csvDataRowList = new ArrayList<>();
-            readSingleCsvFile(filnames.get(i));
-            csvDataRowList = new DataFilterService().getCountriesWithoutProvinces(csvDataRowList);
-            dataMap.put(filnames.get(i), csvDataRowList);
+        for (int i=0;i<filenames.size(); i++){
+            csvDataRowList.addAll(readSingleCsvFile(filenames.get(i)));
         }
+        System.out.println("Total parse errors: " + parseErrors);
     }
 
 
-    public void readSingleCsvFile(final String filename){
+    public List<CsvDataRow> readSingleCsvFile(final String filename){
+        List<CsvDataRow> csvDataRows = new ArrayList<>();
         String line;
 
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
             while ((line = br.readLine()) != null) {
                 try {
-                    CsvDataRow row = CsvRowParser.parseCsvString(line);
-                    csvDataRowList.add(row);
+                    line = line.stripLeading();
+                    if (!line.startsWith("Province") && !line.startsWith(" Province")) {
+                        RowParser rowParser = RowParserFactory.getParser(line);
+                        CsvDataRow row = rowParser.parseCsvString(line);
+                        csvDataRows.add(row);
+                    }
                 }catch(DateTimeParseException e){
                     System.out.println("Parse error: " + line + "," + filename);
+                    parseErrors++;
                 }catch(ArrayIndexOutOfBoundsException ex){
                     System.out.println("Out of bound: " + line);
                 }
@@ -59,5 +68,6 @@ public class CsvReader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return csvDataRows;
     }
 }
