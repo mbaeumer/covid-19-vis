@@ -23,10 +23,13 @@ public class FXLink extends Application{
 	private Group root = new Group();
 	private Scene scene;
 	private FlowPane flowGeneral;
-	private Button btnCreateItem;
+	private FlowPane flowGitCommands;
+	private Button btnClone;
 	private Button btnPull;
-	private Button btnVisualize;
-	private Label lblInfo;
+	private FlowPane flowReadCommands;
+	private Button btnReadRawData;
+	private Label lblGitInfo;
+	private Label lblReadInfo;
 
 	private GitService gitService;
 	private CsvReader csvReader;
@@ -49,10 +52,13 @@ public class FXLink extends Application{
 		this.csvReader = new CsvReader(new DirectoryService());
 		this.dataFilterService = new DataFilterService();
 		this.createGeneralFlowPane();
+		this.createGitFlowPane();
 		this.createCloneButton();
 		this.createPullButton();
-		this.createInfoLabel();
-		this.createVisualizeButton();
+		this.createGitInfoLabel();
+		this.createReadFlowPane();
+		this.createReadRawDataButton();
+		this.createReadInfoLabel();
 	}
 	
 	public void createGeneralFlowPane() {
@@ -63,49 +69,62 @@ public class FXLink extends Application{
 		this.root.getChildren().add(this.flowGeneral);
 	}
 
+	private void createGitFlowPane(){
+		this.flowGitCommands = new FlowPane();
+		this.flowGitCommands.setOrientation(Orientation.HORIZONTAL);
+		this.flowGitCommands.setHgap(10);
+		this.flowGeneral.getChildren().add(this.flowGitCommands);
+	}
+
 	private void createCloneButton(){
-		this.btnCreateItem = new Button("Clone");
-		this.btnCreateItem.setOnAction(actionEvent -> {
+		this.btnClone = new Button("Clone");
+		this.btnClone.setOnAction(actionEvent -> {
 			try {
 				System.out.println("before...");
 				gitService.cloneRepository();
-				lblInfo.setText("Successfully cloned the repository");
+				lblGitInfo.setText("Successfully cloned the repository");
 			} catch (GitAPIException | JGitInternalException e) {
-				lblInfo.setText(e.getMessage());
+				lblGitInfo.setText(e.getMessage());
 			}
 		});
 
-		this.flowGeneral.getChildren().add(this.btnCreateItem);
+		this.flowGitCommands.getChildren().add(this.btnClone);
 	}
 
 	private void createPullButton(){
 		this.btnPull = new Button("Pull");
 		this.btnPull.setOnAction(actionEvent -> {
 			try {
-				System.out.println("before...");
 				gitService.pull();
-				lblInfo.setText("Successfully pulled the repository");
+				lblGitInfo.setText("Successfully pulled the repository");
 			} catch (GitAPIException | JGitInternalException e) {
-				lblInfo.setText(e.getMessage());
+				lblGitInfo.setText(e.getMessage());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		});
 
-		this.flowGeneral.getChildren().add(this.btnPull);
+		this.flowGitCommands.getChildren().add(this.btnPull);
 	}
 
-	private void createInfoLabel(){
-		this.lblInfo = new Label("Info");
-		this.flowGeneral.getChildren().add(lblInfo);
+	private void createGitInfoLabel(){
+		this.lblGitInfo = new Label("Info");
+		this.flowGitCommands.getChildren().add(lblGitInfo);
 	}
 
-	private void createVisualizeButton(){
-		this.btnVisualize = new Button("Visualize");
-		this.btnVisualize.setOnAction(actionEvent -> {
+	private void createReadFlowPane(){
+		this.flowReadCommands = new FlowPane();
+		this.flowReadCommands.setOrientation(Orientation.HORIZONTAL);
+		this.flowReadCommands.setHgap(10);
+		this.flowGeneral.getChildren().add(this.flowReadCommands);
+	}
+
+	private void createReadRawDataButton(){
+		this.btnReadRawData = new Button("Read raw data");
+		this.btnReadRawData.setOnAction(actionEvent -> {
 			csvReader.readMultipleCsvFiles(GitService.LOCAL_PATH + GitService.DATA_PATH);
 			//Map dataMap = csvReader.getDataMap();
-			//lblInfo.setText("Successfully read data: " + dataMap.size());
+			//lblGitInfo.setText("Successfully read data: " + dataMap.size());
 			/*
 			csvReader.readSingleCsvFile(GitService.LOCAL_PATH + GitService.DATA_PATH
 					 + "03-27-2020.csv");
@@ -113,11 +132,15 @@ public class FXLink extends Application{
 			List<CsvDataRow> dataRows = csvReader.getCsvDataRowList();
 			dataRows = dataFilterService.getDataForCountry(dataRows, "Sweden");//getCountriesWithoutProvinces(dataRows);
 			createGraph(dataRows);
-			lblInfo.setText("Successfully read data: " + dataRows.size());
+			lblReadInfo.setText("Successfully read data: " + dataRows.size());
 		});
-		//final LineChart
-		this.flowGeneral.getChildren().add(this.btnVisualize);
 
+		this.flowReadCommands.getChildren().add(this.btnReadRawData);
+	}
+
+	private void createReadInfoLabel(){
+		this.lblReadInfo = new Label("Info");
+		this.flowReadCommands.getChildren().add(lblReadInfo);
 	}
 
 	private void createGraph(final List<CsvDataRow> csvDataRows){
