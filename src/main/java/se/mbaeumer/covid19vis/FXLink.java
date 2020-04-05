@@ -9,6 +9,7 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -22,8 +23,10 @@ public class FXLink extends Application{
 
 	private Group root = new Group();
 	private Scene scene;
+	private BorderPane borderPane;
 	private FlowPane flowGeneral;
 	private FlowPane flowGitCommands;
+	private FlowPane flowRight;
 	private Button btnClone;
 	private Button btnPull;
 	private FlowPane flowReadCommands;
@@ -51,7 +54,9 @@ public class FXLink extends Application{
 		this.gitService = new GitService();
 		this.csvReader = new CsvReader(new DirectoryService());
 		this.dataFilterService = new DataFilterService();
+		this.createBorderPane();
 		this.createGeneralFlowPane();
+		this.createRightFlowPane();
 		this.createGitFlowPane();
 		this.createCloneButton();
 		this.createPullButton();
@@ -60,13 +65,27 @@ public class FXLink extends Application{
 		this.createReadRawDataButton();
 		this.createReadInfoLabel();
 	}
+
+	private void createBorderPane(){
+		this.borderPane = new BorderPane();
+
+		this.root.getChildren().add(this.borderPane);
+	}
 	
 	public void createGeneralFlowPane() {
 		this.flowGeneral = new FlowPane();
 		this.flowGeneral.setOrientation(Orientation.VERTICAL);
 		this.flowGeneral.setPrefWrapLength(700);
 		this.flowGeneral.setVgap(10);
-		this.root.getChildren().add(this.flowGeneral);
+		this.borderPane.setLeft(this.flowGeneral);
+	}
+
+	public void createRightFlowPane() {
+		this.flowRight = new FlowPane();
+		this.flowRight.setOrientation(Orientation.VERTICAL);
+		this.flowRight.setPrefWrapLength(700);
+		this.flowRight.setVgap(10);
+		this.borderPane.setRight(this.flowRight);
 	}
 
 	private void createGitFlowPane(){
@@ -164,7 +183,7 @@ public class FXLink extends Application{
 		*/
 		bc.getData().addAll(series1);
 
-		this.flowGeneral.getChildren().add(bc);
+		this.flowRight.getChildren().add(bc);
 	}
 
 	
