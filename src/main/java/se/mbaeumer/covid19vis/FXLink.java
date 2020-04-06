@@ -1,6 +1,8 @@
 package se.mbaeumer.covid19vis;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -33,10 +35,13 @@ public class FXLink extends Application{
 	private Button btnReadRawData;
 	private Label lblGitInfo;
 	private Label lblReadInfo;
+	private FlowPane flowFilter;
+	private ComboBox<String> cmbCountries = new ComboBox<>();
 
 	private GitService gitService;
 	private CsvReader csvReader;
 	private DataFilterService dataFilterService;
+	private List<CsvDataRow> rawCsvData;
 
 	public void start(Stage stage) {
 		this.scene = new Scene(this.root, 1100, 700, Color.WHITESMOKE);
@@ -64,6 +69,8 @@ public class FXLink extends Application{
 		this.createReadFlowPane();
 		this.createReadRawDataButton();
 		this.createReadInfoLabel();
+		this.createFilterFlowPane();
+		this.createCountryCombobox();
 	}
 
 	private void createBorderPane(){
@@ -148,10 +155,11 @@ public class FXLink extends Application{
 			csvReader.readSingleCsvFile(GitService.LOCAL_PATH + GitService.DATA_PATH
 					 + "03-27-2020.csv");
 					 */
-			List<CsvDataRow> dataRows = csvReader.getCsvDataRowList();
-			dataRows = dataFilterService.getDataForCountry(dataRows, "Sweden");//getCountriesWithoutProvinces(dataRows);
-			createGraph(dataRows);
-			lblReadInfo.setText("Successfully read data: " + dataRows.size());
+			rawCsvData = csvReader.getCsvDataRowList();
+			//dataRows = dataFilterService.getDataForCountry(dataRows, "Sweden");//getCountriesWithoutProvinces(dataRows);
+			//createGraph(dataRows);
+			updateCountryComboBox();
+			lblReadInfo.setText("Successfully read data: " + rawCsvData.size());
 		});
 
 		this.flowReadCommands.getChildren().add(this.btnReadRawData);
@@ -160,6 +168,37 @@ public class FXLink extends Application{
 	private void createReadInfoLabel(){
 		this.lblReadInfo = new Label("Info");
 		this.flowReadCommands.getChildren().add(lblReadInfo);
+	}
+
+	private void createFilterFlowPane(){
+		this.flowFilter = new FlowPane();
+		this.flowFilter.setOrientation(Orientation.HORIZONTAL);
+		this.flowFilter.setHgap(10);
+		this.flowGeneral.getChildren().add(this.flowFilter);
+	}
+
+	private void createCountryCombobox(){
+		cmbCountries.setTooltip(new Tooltip());
+		cmbCountries.getItems().addAll(dataFilterService.getCountryNames(rawCsvData));
+		cmbCountries.valueProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+				System.out.println("create a graph for " + cmbCountries.getSelectionModel().getSelectedItem());
+				List<CsvDataRow> data = dataFilterService.getDataForCountry(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
+				createGraph(data);
+			}
+		});
+
+		this.flowFilter.getChildren().add(this.cmbCountries);
+		new ComboBoxAutoComplete<String>(cmbCountries);
+	}
+
+	private void updateCountryComboBox(){
+		cmbCountries.getItems().clear();
+		cmbCountries.getItems().addAll(dataFilterService.getCountryNames(rawCsvData));
+		new ComboBoxAutoComplete<String>(cmbCountries);
+		System.out.println("selected item: " + cmbCountries.getSelectionModel().getSelectedItem());
+		lblReadInfo.setText(cmbCountries.getSelectionModel().getSelectedItem());
 	}
 
 	private void createGraph(final List<CsvDataRow> csvDataRows){
@@ -183,6 +222,7 @@ public class FXLink extends Application{
 		*/
 		bc.getData().addAll(series1);
 
+		this.flowRight.getChildren().clear();
 		this.flowRight.getChildren().add(bc);
 	}
 

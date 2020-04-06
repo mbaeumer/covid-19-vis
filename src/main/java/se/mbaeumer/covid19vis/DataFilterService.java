@@ -1,6 +1,9 @@
 package se.mbaeumer.covid19vis;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DataFilterService {
@@ -15,5 +18,16 @@ public class DataFilterService {
         return data.stream()
                 .filter(csvDataRow -> country.equals(csvDataRow.getCountry()))
                 .collect(Collectors.toList());
+    }
+
+    public Set<String> getCountryNames(List<CsvDataRow> data){
+
+        if (data == null){
+            Set<String> dummyList = new HashSet<>();
+            dummyList.add("No data available");
+            return dummyList;
+        }
+        List<CsvDataRow> rawData = getCountriesWithoutProvinces(data);
+        return rawData.stream().map(c -> c.getCountry()).collect(Collectors.toSet());
     }
 }
