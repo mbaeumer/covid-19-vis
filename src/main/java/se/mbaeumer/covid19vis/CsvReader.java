@@ -23,7 +23,9 @@ public class CsvReader {
     }
 
     private Map dataMap = new HashMap<String, List<CsvDataRow>>();
-    private int parseErrors = 0;
+    private int totalLineCount = 0;
+    private int totalParseErrors = 0;
+    private int totalOutOfBoundErrorCount = 0;
 
     public CsvReader(final DirectoryService directoryService) {
         this.directoryService = directoryService;
@@ -34,13 +36,16 @@ public class CsvReader {
     }
 
     public void readMultipleCsvFiles(final String path){
+        totalLineCount = 0;
+        totalParseErrors = 0;
+        totalOutOfBoundErrorCount = 0;
         List<String> filenames = directoryService.getAllCsvFilenames(path);
         csvDataRowList = new ArrayList<>();
 
         for (int i=0;i<filenames.size(); i++){
             csvDataRowList.addAll(readSingleCsvFile(filenames.get(i)));
         }
-        System.out.println("Total parse errors: " + parseErrors);
+        System.out.println("Total parse errors: " + totalParseErrors);
     }
 
 
@@ -51,6 +56,7 @@ public class CsvReader {
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
 
             while ((line = br.readLine()) != null) {
+                totalLineCount++;
                 try {
                     line = line.stripLeading();
                     if (!line.startsWith("Province") && !line.startsWith(" Province")) {
@@ -60,8 +66,9 @@ public class CsvReader {
                     }
                 }catch(DateTimeParseException e){
                     System.out.println("Parse error: " + line + "," + filename);
-                    parseErrors++;
+                    totalParseErrors++;
                 }catch(ArrayIndexOutOfBoundsException ex){
+                    totalOutOfBoundErrorCount++;
                     System.out.println("Out of bound: " + line);
                 }
             }

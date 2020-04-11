@@ -3,6 +3,9 @@ package se.mbaeumer.covid19vis;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
+import javafx.event.EventType;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -11,14 +14,22 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 public class FXLink extends Application{
@@ -35,8 +46,13 @@ public class FXLink extends Application{
 	private Button btnReadRawData;
 	private Label lblGitInfo;
 	private Label lblReadInfo;
+	private Label lblPlaceholder;
 	private FlowPane flowFilter;
+	private Label lblFilterHeadingCompareCountries;
+	private DatePicker datePicker;
+	private Label lblErrorMessage;
 	private ComboBox<String> cmbCountries = new ComboBox<>();
+	private Label lblFilterHeadingShowDataForCountry;
 
 	private GitService gitService;
 	private CsvReader csvReader;
@@ -44,11 +60,12 @@ public class FXLink extends Application{
 	private List<CsvDataRow> rawCsvData;
 
 	public void start(Stage stage) {
-		this.scene = new Scene(this.root, 1100, 700, Color.WHITESMOKE);
+		this.scene = new Scene(this.root, 1100, 700, Color.LIGHTGRAY);
 		stage.setTitle("COVID-19 visualizer");
 		stage.setScene(this.scene);
 		stage.show();
 		this.initLayout();
+
 	}
 
 	public static void main(String[] args) {
@@ -62,6 +79,7 @@ public class FXLink extends Application{
 		this.createBorderPane();
 		this.createGeneralFlowPane();
 		this.createRightFlowPane();
+		this.createPlaceHolder();
 		this.createGitFlowPane();
 		this.createCloneButton();
 		this.createPullButton();
@@ -70,7 +88,11 @@ public class FXLink extends Application{
 		this.createReadRawDataButton();
 		this.createReadInfoLabel();
 		this.createFilterFlowPane();
-		this.createCountryCombobox();
+		this.createFilterHeadingCompareCountries();
+		this.createDatePicker();
+		this.createErrorMessageLabel();
+		//this.lblFilterHeadingCompareCountries.prefWidthProperty().setValue(this.flowFilter.widthProperty().getValue() - 15);
+		//this.createCountryCombobox();
 	}
 
 	private void createBorderPane(){
@@ -84,7 +106,19 @@ public class FXLink extends Application{
 		this.flowGeneral.setOrientation(Orientation.VERTICAL);
 		this.flowGeneral.setPrefWrapLength(700);
 		this.flowGeneral.setVgap(10);
+
+
+		this.flowGeneral.setBackground(createBackground());
+		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
+		this.flowGeneral.setEffect(dropShadow);
+
 		this.borderPane.setLeft(this.flowGeneral);
+	}
+
+	private Background createBackground(){
+		Insets bgInsets = new Insets(5);
+		BackgroundFill bgFill = new BackgroundFill(Color.WHITESMOKE, null, bgInsets);
+		return new Background(bgFill);
 	}
 
 	public void createRightFlowPane() {
@@ -92,13 +126,27 @@ public class FXLink extends Application{
 		this.flowRight.setOrientation(Orientation.VERTICAL);
 		this.flowRight.setPrefWrapLength(700);
 		this.flowRight.setVgap(10);
+
+		this.flowRight.setBackground(createBackground());
+		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
+		this.flowRight.setEffect(dropShadow);
+		this.flowRight.prefHeightProperty().bind(this.flowGeneral.prefHeightProperty());
+		this.flowRight.prefWidthProperty().bind(this.flowGeneral.widthProperty());
+
 		this.borderPane.setRight(this.flowRight);
+	}
+
+	private void createPlaceHolder(){
+		this.lblPlaceholder = new Label("Placeholder");
+		this.lblPlaceholder.setPadding(new Insets(10));
+		this.flowRight.getChildren().add(this.lblPlaceholder);
 	}
 
 	private void createGitFlowPane(){
 		this.flowGitCommands = new FlowPane();
 		this.flowGitCommands.setOrientation(Orientation.HORIZONTAL);
 		this.flowGitCommands.setHgap(10);
+		this.flowGitCommands.setPadding(new Insets(10,5,0,10));
 		this.flowGeneral.getChildren().add(this.flowGitCommands);
 	}
 
@@ -142,6 +190,7 @@ public class FXLink extends Application{
 		this.flowReadCommands = new FlowPane();
 		this.flowReadCommands.setOrientation(Orientation.HORIZONTAL);
 		this.flowReadCommands.setHgap(10);
+		this.flowReadCommands.setPadding(new Insets(5, 5, 0, 10));
 		this.flowGeneral.getChildren().add(this.flowReadCommands);
 	}
 
@@ -174,7 +223,55 @@ public class FXLink extends Application{
 		this.flowFilter = new FlowPane();
 		this.flowFilter.setOrientation(Orientation.HORIZONTAL);
 		this.flowFilter.setHgap(10);
+		this.flowFilter.setPadding(new Insets(5, 5, 0, 10));
 		this.flowGeneral.getChildren().add(this.flowFilter);
+	}
+
+	private void createFilterHeadingCompareCountries(){
+		this.lblFilterHeadingCompareCountries = new Label("Compare countries by date");
+
+		this.flowFilter.getChildren().add(this.lblFilterHeadingCompareCountries);
+	}
+
+	private void createDatePicker(){
+		EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				System.out.println("FlowPane: " + flowFilter.widthProperty().get());
+				System.out.println("Label: " + lblFilterHeadingCompareCountries.prefWidthProperty().get());
+			}
+		};
+		this.datePicker = new DatePicker();
+		this.datePicker.addEventHandler(MouseEvent.MOUSE_ENTERED, eventHandler);
+		this.datePicker.valueProperty().addListener(new ChangeListener<LocalDate>() {
+			@Override
+			public void changed(ObservableValue<? extends LocalDate> observableValue, LocalDate localDate, LocalDate t1) {
+				if (rawCsvData != null) {
+					LocalTime lt = LocalTime.MAX;
+					LocalDateTime ldt = LocalDateTime.of(t1, lt);
+					List<CsvDataRow> data = dataFilterService.getDataByDate(rawCsvData, ldt);
+					createCountryGraph(data);
+					removeErrorMessage();
+				}else{
+					showErrorMessage();
+				}
+
+			}
+		});
+		this.flowFilter.getChildren().add(this.datePicker);
+	}
+
+	private void createErrorMessageLabel(){
+		this.lblErrorMessage = new Label("");
+	}
+
+	private void showErrorMessage(){
+		this.lblErrorMessage.setText("No data available!");
+		this.flowFilter.getChildren().add(this.lblErrorMessage);
+	}
+
+	private void removeErrorMessage(){
+		this.flowFilter.getChildren().remove(this.lblErrorMessage);
 	}
 
 	private void createCountryCombobox(){
@@ -208,11 +305,12 @@ public class FXLink extends Application{
 				new BarChart<String,Number>(xAxis,yAxis);
 
 		XYChart.Series series1 = new XYChart.Series();
+		bc.prefWidthProperty().bind(this.flowRight.widthProperty());
 
 		for (int i=0; i<csvDataRows.size(); i++){
 			series1.getData().add(new XYChart.Data(csvDataRows.get(i).getLastUpdated().toString(), csvDataRows.get(i).getConfirmed()));
 		}
-		series1.setName("Confirmed COVID-19 cases 2020-03-27");
+		series1.setName("Confirmed cases - trend Sweden");
 		/*
 		series1.getData().add(new XYChart.Data(csvDataRows.get(0).getCountry(), csvDataRows.get(0).getConfirmed()));
 		series1.getData().add(new XYChart.Data(csvDataRows.get(1).getCountry(), csvDataRows.get(1).getConfirmed()));
@@ -220,6 +318,26 @@ public class FXLink extends Application{
 		series1.getData().add(new XYChart.Data(csvDataRows.get(3).getCountry(), csvDataRows.get(3).getConfirmed()));
 		series1.getData().add(new XYChart.Data(csvDataRows.get(4).getCountry(), csvDataRows.get(4).getConfirmed()));
 		*/
+		bc.getData().addAll(series1);
+
+		this.flowRight.getChildren().clear();
+		this.flowRight.getChildren().add(bc);
+	}
+
+	private void createCountryGraph(final List<CsvDataRow> csvDataRows){
+		final CategoryAxis xAxis = new CategoryAxis();
+		final NumberAxis yAxis = new NumberAxis();
+		final BarChart<String,Number> bc =
+				new BarChart<String,Number>(xAxis,yAxis);
+
+		XYChart.Series series1 = new XYChart.Series();
+		bc.prefWidthProperty().bind(this.flowRight.widthProperty());
+
+		for (int i=0; i<csvDataRows.size(); i++){
+			series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getConfirmed()));
+		}
+		series1.setName("Confirmed cases - ");
+
 		bc.getData().addAll(series1);
 
 		this.flowRight.getChildren().clear();

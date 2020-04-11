@@ -1,5 +1,6 @@
 package se.mbaeumer.covid19vis;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,4 +31,16 @@ public class DataFilterService {
         List<CsvDataRow> rawData = getCountriesWithoutProvinces(data);
         return rawData.stream().map(c -> c.getCountry()).collect(Collectors.toSet());
     }
+
+    public List<CsvDataRow> getDataByDate(final List<CsvDataRow> data, final LocalDateTime date){
+        List<CsvDataRow> rawData = getCountriesWithoutProvinces(data);
+
+        return rawData.stream()
+                .filter(d -> d.getLastUpdated().getMonthValue() == date.getMonthValue()
+                && d.getLastUpdated().getDayOfMonth() == date.getDayOfMonth()
+                        && d.getLastUpdated().getYear() == date.getYear())
+                .collect(Collectors.toList());
+    }
+
+
 }
