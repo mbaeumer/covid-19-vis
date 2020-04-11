@@ -1,4 +1,4 @@
-package se.mbaeumer.covid19vis;
+package se.mbaeumer.covid19vis.parser.date;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

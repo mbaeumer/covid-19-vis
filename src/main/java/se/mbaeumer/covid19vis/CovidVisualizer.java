@@ -21,6 +21,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import se.mbaeumer.covid19vis.services.DataFilterService;
+import se.mbaeumer.covid19vis.services.DirectoryService;
+import se.mbaeumer.covid19vis.services.GitService;
+import se.mbaeumer.covid19vis.ui.ComboBoxAutoComplete;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -28,7 +32,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-public class FXLink extends Application{
+public class CovidVisualizer extends Application{
 
 	private Group root = new Group();
 	private Scene scene;

@@ -1,4 +1,4 @@
-package se.mbaeumer.covid19vis;
+package se.mbaeumer.covid19vis.ui;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

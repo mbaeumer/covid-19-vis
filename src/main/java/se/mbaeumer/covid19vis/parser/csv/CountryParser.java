@@ -1,7 +1,7 @@
-package se.mbaeumer.covid19vis.parser;
+package se.mbaeumer.covid19vis.parser.csv;
 
 import se.mbaeumer.covid19vis.CsvDataRow;
-import se.mbaeumer.covid19vis.DateParser;
+import se.mbaeumer.covid19vis.parser.date.DateParser;
 
 public class CountryParser implements RowParser {
     private DateParser dateParser = new DateParser();

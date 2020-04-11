@@ -1,4 +1,6 @@
-package se.mbaeumer.covid19vis;
+package se.mbaeumer.covid19vis.services;
+
+import se.mbaeumer.covid19vis.CsvDataRow;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

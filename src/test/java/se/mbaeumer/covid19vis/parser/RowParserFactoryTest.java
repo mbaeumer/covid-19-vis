@@ -2,8 +2,8 @@ package se.mbaeumer.covid19vis.parser;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.*;
+import se.mbaeumer.covid19vis.parser.csv.RowParser;
+import se.mbaeumer.covid19vis.parser.csv.RowParserFactory;
 
 public class RowParserFactoryTest {
 

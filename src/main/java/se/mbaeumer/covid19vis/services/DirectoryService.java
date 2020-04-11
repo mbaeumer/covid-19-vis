@@ -1,4 +1,4 @@
-package se.mbaeumer.covid19vis;
+package se.mbaeumer.covid19vis.services;
 
 import java.io.File;
 import java.io.FileNotFoundException;

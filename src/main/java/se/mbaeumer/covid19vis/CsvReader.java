@@ -1,7 +1,8 @@
 package se.mbaeumer.covid19vis;
 
-import se.mbaeumer.covid19vis.parser.RowParser;
-import se.mbaeumer.covid19vis.parser.RowParserFactory;
+import se.mbaeumer.covid19vis.parser.csv.RowParser;
+import se.mbaeumer.covid19vis.parser.csv.RowParserFactory;
+import se.mbaeumer.covid19vis.services.DirectoryService;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

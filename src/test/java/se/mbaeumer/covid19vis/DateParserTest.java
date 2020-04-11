@@ -2,11 +2,9 @@ package se.mbaeumer.covid19vis;
 
 import org.junit.Assert;
 import org.junit.Test;
+import se.mbaeumer.covid19vis.parser.date.DateParser;
 
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalField;
-
-import static org.junit.Assert.*;
 
 public class DateParserTest {
 

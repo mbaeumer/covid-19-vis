@@ -62,7 +62,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>se.mbaeumer.javafxlab.java11.FXLink</mainClass>
+                            <mainClass>se.mbaeumer.javafxlab.java11.CovidVisualizer</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -76,7 +76,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.3</version>
                 <configuration>
-                    <mainClass>se.mbaeumer.covid19vis.FXLink</mainClass>
+                    <mainClass>se.mbaeumer.covid19vis.CovidVisualizer</mainClass>
                 </configuration>
             </plugin>
         </plugins>

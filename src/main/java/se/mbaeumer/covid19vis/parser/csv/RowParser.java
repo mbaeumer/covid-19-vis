@@ -1,4 +1,4 @@
-package se.mbaeumer.covid19vis.parser;
+package se.mbaeumer.covid19vis.parser.csv;
 
 import se.mbaeumer.covid19vis.CsvDataRow;
 

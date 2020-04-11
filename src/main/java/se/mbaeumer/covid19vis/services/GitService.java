@@ -1,4 +1,4 @@
-package se.mbaeumer.covid19vis;
+package se.mbaeumer.covid19vis.services;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;

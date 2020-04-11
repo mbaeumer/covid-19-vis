@@ -3,8 +3,7 @@ package se.mbaeumer.covid19vis.parser;
 import org.junit.Assert;
 import org.junit.Test;
 import se.mbaeumer.covid19vis.CsvDataRow;
-
-import static org.junit.Assert.*;
+import se.mbaeumer.covid19vis.parser.csv.ChineseProvinceParser;
 
 public class ChineseProvinceParserTest {
 
