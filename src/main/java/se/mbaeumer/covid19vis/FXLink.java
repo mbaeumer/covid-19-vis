@@ -3,8 +3,6 @@ package se.mbaeumer.covid19vis;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
@@ -15,13 +13,11 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
@@ -234,15 +230,7 @@ public class FXLink extends Application{
 	}
 
 	private void createDatePicker(){
-		EventHandler<MouseEvent> eventHandler = new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent e) {
-				System.out.println("FlowPane: " + flowFilter.widthProperty().get());
-				System.out.println("Label: " + lblFilterHeadingCompareCountries.prefWidthProperty().get());
-			}
-		};
 		this.datePicker = new DatePicker();
-		this.datePicker.addEventHandler(MouseEvent.MOUSE_ENTERED, eventHandler);
 		this.datePicker.valueProperty().addListener(new ChangeListener<LocalDate>() {
 			@Override
 			public void changed(ObservableValue<? extends LocalDate> observableValue, LocalDate localDate, LocalDate t1) {
@@ -258,6 +246,7 @@ public class FXLink extends Application{
 
 			}
 		});
+
 		this.flowFilter.getChildren().add(this.datePicker);
 	}
 
