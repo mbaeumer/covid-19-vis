@@ -1,12 +1,10 @@
 package se.mbaeumer.covid19vis.services;
 
 import se.mbaeumer.covid19vis.CsvDataRow;
+import se.mbaeumer.covid19vis.MetricsType;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DataFilterService {
@@ -44,5 +42,40 @@ public class DataFilterService {
                 .collect(Collectors.toList());
     }
 
+    public List<CsvDataRow> getDataByDateAndMetricsType(final List<CsvDataRow> data, final LocalDateTime date, final MetricsType metricsType){
+        List<CsvDataRow> result = null;
+        if (metricsType == MetricsType.CONFIRMED){
+            result = getTopConfirmedCasesByDate(data, date);
+        }else if (metricsType == MetricsType.RECOVERED){
+            result = getTopRecoveredCasesByDate(data, date);
+        }else if (metricsType == MetricsType.DEATHS){
+            result = getTopDeathCasesByDate(data, date);
+        }
 
+        return result;
+    }
+
+    public List<CsvDataRow> getTopConfirmedCasesByDate(final List<CsvDataRow> data, final LocalDateTime date){
+        List<CsvDataRow> rawData = getDataByDate(data, date);
+
+        return rawData.stream()
+                .sorted(Comparator.comparing(CsvDataRow::getConfirmed).reversed())
+                .collect(Collectors.toList());
+    }
+
+    public List<CsvDataRow> getTopRecoveredCasesByDate(final List<CsvDataRow> data, final LocalDateTime date){
+        List<CsvDataRow> rawData = getDataByDate(data, date);
+
+        return rawData.stream()
+                .sorted(Comparator.comparing(CsvDataRow::getRecovered).reversed())
+                .collect(Collectors.toList());
+    }
+
+    public List<CsvDataRow> getTopDeathCasesByDate(final List<CsvDataRow> data, final LocalDateTime date){
+        List<CsvDataRow> rawData = getDataByDate(data, date);
+
+        return rawData.stream()
+                .sorted(Comparator.comparing(CsvDataRow::getDeaths).reversed())
+                .collect(Collectors.toList());
+    }
 }

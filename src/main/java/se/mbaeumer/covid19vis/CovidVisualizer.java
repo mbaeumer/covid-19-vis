@@ -50,6 +50,7 @@ public class CovidVisualizer extends Application{
 	private FlowPane flowFilter;
 	private Label lblFilterHeadingCompareCountries;
 	private DatePicker datePicker;
+	private ToggleGroup toggleGroup;
 	private Label lblErrorMessage;
 	private ComboBox<String> cmbCountries = new ComboBox<>();
 	private Label lblFilterHeadingShowDataForCountry;
@@ -90,8 +91,9 @@ public class CovidVisualizer extends Application{
 		this.createFilterFlowPane();
 		this.createFilterHeadingCompareCountries();
 		this.createDatePicker();
+		this.createRadioButtons();
 		this.createErrorMessageLabel();
-		//this.lblFilterHeadingCompareCountries.prefWidthProperty().setValue(this.flowFilter.widthProperty().getValue() - 15);
+		//this.lblFilterHeadingCompareCountries.prefWidthProperty().bind(this.flowFilter.widthProperty());
 		//this.createCountryCombobox();
 	}
 
@@ -229,20 +231,72 @@ public class CovidVisualizer extends Application{
 
 	private void createFilterHeadingCompareCountries(){
 		this.lblFilterHeadingCompareCountries = new Label("Compare countries by date");
-
+		this.lblFilterHeadingCompareCountries.setPadding(new Insets(5, 5, 5, 0));
 		this.flowFilter.getChildren().add(this.lblFilterHeadingCompareCountries);
 	}
 
+	private void createRadioButtons(){
+		this.toggleGroup = new ToggleGroup();
+
+		RadioButton radConfirmed = new RadioButton("confirmed");
+		radConfirmed.setToggleGroup(toggleGroup);
+		radConfirmed.setPadding(new Insets(5, 5, 5, 0));
+
+		RadioButton radRecovered = new RadioButton("recovered");
+		radRecovered.setToggleGroup(toggleGroup);
+
+		RadioButton radDeaths = new RadioButton("deaths");
+		radDeaths.setToggleGroup(toggleGroup);
+
+		toggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
+			public void changed(ObservableValue<? extends Toggle> ov,
+								Toggle old_toggle, Toggle new_toggle) {
+				if (toggleGroup.getSelectedToggle() != null) {
+					LocalTime lt = LocalTime.MAX;
+					if (datePicker.getValue() != null) {
+						LocalDateTime ldt = LocalDateTime.of(datePicker.getValue(), lt);
+						MetricsType metricsType = getMetricsType(new_toggle.toString());
+						List<CsvDataRow> data = dataFilterService.getDataByDateAndMetricsType(rawCsvData, ldt, metricsType);
+						createCountryGraph(data, metricsType);
+					}
+				}
+			}
+		});
+
+		this.flowFilter.getChildren().addAll(radConfirmed, radRecovered, radDeaths);
+
+	}
+
+	private MetricsType getMetricsType(final String toggleValue){
+		MetricsType metricsType = MetricsType.CONFIRMED;
+		if (toggleValue.contains("recovered")){
+			metricsType = MetricsType.RECOVERED;
+		}else if (toggleValue.contains("death")){
+			metricsType = MetricsType.DEATHS;
+		}
+
+		return metricsType;
+	}
+
+
 	private void createDatePicker(){
 		this.datePicker = new DatePicker();
+
 		this.datePicker.valueProperty().addListener(new ChangeListener<LocalDate>() {
 			@Override
 			public void changed(ObservableValue<? extends LocalDate> observableValue, LocalDate localDate, LocalDate t1) {
 				if (rawCsvData != null) {
 					LocalTime lt = LocalTime.MAX;
 					LocalDateTime ldt = LocalDateTime.of(t1, lt);
-					List<CsvDataRow> data = dataFilterService.getDataByDate(rawCsvData, ldt);
-					createCountryGraph(data);
+					List<CsvDataRow> data = null;
+					if (toggleGroup.getSelectedToggle() != null) {
+						MetricsType metricsType = getMetricsType(toggleGroup.getSelectedToggle().toString());
+						data = dataFilterService.getDataByDateAndMetricsType(rawCsvData, ldt, metricsType);
+						createCountryGraph(data, metricsType);
+					}else{
+						data = dataFilterService.getDataByDateAndMetricsType(rawCsvData, ldt, MetricsType.CONFIRMED);
+						createCountryGraph(data, MetricsType.CONFIRMED);
+					}
 					removeErrorMessage();
 				}else{
 					showErrorMessage();
@@ -317,7 +371,7 @@ public class CovidVisualizer extends Application{
 		this.flowRight.getChildren().add(bc);
 	}
 
-	private void createCountryGraph(final List<CsvDataRow> csvDataRows){
+	private void createCountryGraph(final List<CsvDataRow> csvDataRows, final MetricsType metricsType){
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
 		final BarChart<String,Number> bc =
@@ -326,17 +380,33 @@ public class CovidVisualizer extends Application{
 		XYChart.Series series1 = new XYChart.Series();
 		bc.prefWidthProperty().bind(this.flowRight.widthProperty());
 
-		for (int i=0; i<csvDataRows.size(); i++){
-			series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getConfirmed()));
-		}
-		series1.setName("Confirmed cases - ");
-
+		series1 = createDataSeries(csvDataRows, metricsType);
+		bc.getData().clear();
 		bc.getData().addAll(series1);
 
 		this.flowRight.getChildren().clear();
 		this.flowRight.getChildren().add(bc);
 	}
 
-	
+	private XYChart.Series createDataSeries(final List<CsvDataRow> csvDataRows, final MetricsType metricsType){
+		XYChart.Series series1 = new XYChart.Series();
+		if (metricsType == MetricsType.CONFIRMED) {
+			for (int i = 0; i < 40; i++) {
+				series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getConfirmed()));
+			}
+			series1.setName("Confirmed cases - ");
+		}else if (metricsType == MetricsType.RECOVERED){
+			for (int i = 0; i < 40; i++) {
+				series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getRecovered()));
+			}
+			series1.setName("Recovered cases - ");
+		}else if (metricsType == MetricsType.DEATHS){
+			for (int i = 0; i < 40; i++) {
+				series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getDeaths()));
+			}
+			series1.setName("Death cases - ");
+		}
+		return series1;
 
+	}
 }
