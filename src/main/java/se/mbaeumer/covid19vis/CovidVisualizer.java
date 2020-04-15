@@ -7,10 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.XYChart;
+import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.Background;
@@ -30,6 +27,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class CovidVisualizer extends Application{
@@ -53,7 +51,7 @@ public class CovidVisualizer extends Application{
 	private ToggleGroup toggleGroup;
 	private Label lblErrorMessage;
 	private ComboBox<String> cmbCountries = new ComboBox<>();
-	private Label lblFilterHeadingShowDataForCountry;
+	private Label lblFilterHeadingShowTrendForCountry;
 
 	private GitService gitService;
 	private CsvReader csvReader;
@@ -94,7 +92,8 @@ public class CovidVisualizer extends Application{
 		this.createRadioButtons();
 		this.createErrorMessageLabel();
 		//this.lblFilterHeadingCompareCountries.prefWidthProperty().bind(this.flowFilter.widthProperty());
-		//this.createCountryCombobox();
+		this.createFilterHeadingTrend();
+		this.createCountryCombobox();
 	}
 
 	private void createBorderPane(){
@@ -200,15 +199,7 @@ public class CovidVisualizer extends Application{
 		this.btnReadRawData = new Button("Read raw data");
 		this.btnReadRawData.setOnAction(actionEvent -> {
 			csvReader.readMultipleCsvFiles(GitService.LOCAL_PATH + GitService.DATA_PATH);
-			//Map dataMap = csvReader.getDataMap();
-			//lblGitInfo.setText("Successfully read data: " + dataMap.size());
-			/*
-			csvReader.readSingleCsvFile(GitService.LOCAL_PATH + GitService.DATA_PATH
-					 + "03-27-2020.csv");
-					 */
 			rawCsvData = csvReader.getCsvDataRowList();
-			//dataRows = dataFilterService.getDataForCountry(dataRows, "Sweden");//getCountriesWithoutProvinces(dataRows);
-			//createGraph(dataRows);
 			updateCountryComboBox();
 			lblReadInfo.setText("Successfully read data: " + rawCsvData.size());
 		});
@@ -223,7 +214,7 @@ public class CovidVisualizer extends Application{
 
 	private void createFilterFlowPane(){
 		this.flowFilter = new FlowPane();
-		this.flowFilter.setOrientation(Orientation.HORIZONTAL);
+		this.flowFilter.setOrientation(Orientation.VERTICAL);
 		this.flowFilter.setHgap(10);
 		this.flowFilter.setPadding(new Insets(5, 5, 0, 10));
 		this.flowGeneral.getChildren().add(this.flowFilter);
@@ -231,7 +222,7 @@ public class CovidVisualizer extends Application{
 
 	private void createFilterHeadingCompareCountries(){
 		this.lblFilterHeadingCompareCountries = new Label("Compare countries by date");
-		this.lblFilterHeadingCompareCountries.setPadding(new Insets(5, 5, 5, 0));
+		this.lblFilterHeadingCompareCountries.setPadding(new Insets(5, 0, 5, 0));
 		this.flowFilter.getChildren().add(this.lblFilterHeadingCompareCountries);
 	}
 
@@ -244,9 +235,11 @@ public class CovidVisualizer extends Application{
 
 		RadioButton radRecovered = new RadioButton("recovered");
 		radRecovered.setToggleGroup(toggleGroup);
+		radRecovered.setPadding(new Insets(0, 0, 5, 0));
 
 		RadioButton radDeaths = new RadioButton("deaths");
 		radDeaths.setToggleGroup(toggleGroup);
+		radRecovered.setPadding(new Insets(0, 0, 5, 0));
 
 		toggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
 			public void changed(ObservableValue<? extends Toggle> ov,
@@ -329,7 +322,7 @@ public class CovidVisualizer extends Application{
 			public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
 				System.out.println("create a graph for " + cmbCountries.getSelectionModel().getSelectedItem());
 				List<CsvDataRow> data = dataFilterService.getDataForCountry(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
-				createGraph(data);
+				createTrendGraph(data);
 			}
 		});
 
@@ -345,30 +338,35 @@ public class CovidVisualizer extends Application{
 		lblReadInfo.setText(cmbCountries.getSelectionModel().getSelectedItem());
 	}
 
-	private void createGraph(final List<CsvDataRow> csvDataRows){
+	private void createFilterHeadingTrend(){
+		this.lblFilterHeadingShowTrendForCountry = new Label("Trend by country");
+		this.lblFilterHeadingShowTrendForCountry.setPadding(new Insets(5, 5, 5, 0));
+		this.flowFilter.getChildren().add(this.lblFilterHeadingShowTrendForCountry);
+	}
+
+
+	private void createTrendGraph(final List<CsvDataRow> csvDataRows){
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
-		final BarChart<String,Number> bc =
-				new BarChart<String,Number>(xAxis,yAxis);
+		final LineChart<String,Number> bc =
+				new LineChart<String,Number>(xAxis,yAxis);
 
 		XYChart.Series series1 = new XYChart.Series();
 		bc.prefWidthProperty().bind(this.flowRight.widthProperty());
 
+
 		for (int i=0; i<csvDataRows.size(); i++){
-			series1.getData().add(new XYChart.Data(csvDataRows.get(i).getLastUpdated().toString(), csvDataRows.get(i).getConfirmed()));
+			series1.getData().add(new XYChart.Data(getDateString(csvDataRows.get(i).getLastUpdated()), csvDataRows.get(i).getConfirmed()));
 		}
-		series1.setName("Confirmed cases - trend Sweden");
-		/*
-		series1.getData().add(new XYChart.Data(csvDataRows.get(0).getCountry(), csvDataRows.get(0).getConfirmed()));
-		series1.getData().add(new XYChart.Data(csvDataRows.get(1).getCountry(), csvDataRows.get(1).getConfirmed()));
-		series1.getData().add(new XYChart.Data(csvDataRows.get(2).getCountry(), csvDataRows.get(2).getConfirmed()));
-		series1.getData().add(new XYChart.Data(csvDataRows.get(3).getCountry(), csvDataRows.get(3).getConfirmed()));
-		series1.getData().add(new XYChart.Data(csvDataRows.get(4).getCountry(), csvDataRows.get(4).getConfirmed()));
-		*/
+		series1.setName("Confirmed cases - trend " + cmbCountries.getSelectionModel().getSelectedItem());
 		bc.getData().addAll(series1);
 
 		this.flowRight.getChildren().clear();
 		this.flowRight.getChildren().add(bc);
+	}
+
+	private String getDateString(final LocalDateTime localDateTime){
+		return localDateTime.format(DateTimeFormatter.ISO_DATE);
 	}
 
 	private void createCountryGraph(final List<CsvDataRow> csvDataRows, final MetricsType metricsType){
@@ -390,21 +388,22 @@ public class CovidVisualizer extends Application{
 
 	private XYChart.Series createDataSeries(final List<CsvDataRow> csvDataRows, final MetricsType metricsType){
 		XYChart.Series series1 = new XYChart.Series();
+		final int maxBars = 20;
 		if (metricsType == MetricsType.CONFIRMED) {
-			for (int i = 0; i < 40; i++) {
+			for (int i = 0; i < maxBars; i++) {
 				series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getConfirmed()));
 			}
-			series1.setName("Confirmed cases - ");
+			series1.setName("Confirmed cases - " + datePicker.getValue());
 		}else if (metricsType == MetricsType.RECOVERED){
-			for (int i = 0; i < 40; i++) {
+			for (int i = 0; i < maxBars; i++) {
 				series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getRecovered()));
 			}
-			series1.setName("Recovered cases - ");
+			series1.setName("Recovered cases - " + datePicker.getValue());
 		}else if (metricsType == MetricsType.DEATHS){
-			for (int i = 0; i < 40; i++) {
+			for (int i = 0; i < maxBars; i++) {
 				series1.getData().add(new XYChart.Data(csvDataRows.get(i).getCountry(), csvDataRows.get(i).getDeaths()));
 			}
-			series1.setName("Death cases - ");
+			series1.setName("Death cases - " + datePicker.getValue());
 		}
 		return series1;
 
