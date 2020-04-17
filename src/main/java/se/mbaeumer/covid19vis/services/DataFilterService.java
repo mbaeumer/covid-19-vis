@@ -15,6 +15,24 @@ public class DataFilterService {
                 .collect(Collectors.toList());
     }
 
+    public List<DailyCase> getCasesByCountrySortedByDate(final List<CsvDataRow> data, String country){
+        List<CsvDataRow> countryData = getDataForCountry(data, country);
+        List<DailyCase> dailyCases = new ArrayList<>();
+        List<CsvDataRow> sortedList = countryData.stream()
+                .sorted(Comparator.comparing(CsvDataRow::getConfirmed))
+                .collect(Collectors.toList());
+
+        int i = 1;
+        while (i < sortedList.size()){
+            int j = i - 1;
+            int newCases = sortedList.get(i).getConfirmed() - sortedList.get(j).getConfirmed();
+            dailyCases.add(new DailyCase(sortedList.get(i).getLastUpdated(), newCases));
+            i++;
+        }
+
+        return dailyCases;
+    }
+
     public List<CsvDataRow> getDataForCountry(final List<CsvDataRow> data, String country){
         return data.stream()
                 .filter(csvDataRow -> country.equals(csvDataRow.getCountry()))

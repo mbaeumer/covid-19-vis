@@ -18,6 +18,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
+import se.mbaeumer.covid19vis.services.DailyCase;
 import se.mbaeumer.covid19vis.services.DataFilterService;
 import se.mbaeumer.covid19vis.services.DirectoryService;
 import se.mbaeumer.covid19vis.services.GitService;
@@ -320,9 +321,13 @@ public class CovidVisualizer extends Application{
 		cmbCountries.valueProperty().addListener(new ChangeListener<String>() {
 			@Override
 			public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
-				System.out.println("create a graph for " + cmbCountries.getSelectionModel().getSelectedItem());
-				List<CsvDataRow> data = dataFilterService.getDataForCountry(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
-				createTrendGraph(data);
+				if (cmbCountries.getSelectionModel().getSelectedItem() != null) {
+					System.out.println("create a graph for " + cmbCountries.getSelectionModel().getSelectedItem());
+					//List<CsvDataRow> data = dataFilterService.getDataForCountry(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
+					//createTrendGraph(data);
+					List<DailyCase> dailyCases = dataFilterService.getCasesByCountrySortedByDate(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
+					createDistributedTrendGraph(dailyCases);
+				}
 			}
 		});
 
@@ -344,7 +349,6 @@ public class CovidVisualizer extends Application{
 		this.flowFilter.getChildren().add(this.lblFilterHeadingShowTrendForCountry);
 	}
 
-
 	private void createTrendGraph(final List<CsvDataRow> csvDataRows){
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
@@ -352,13 +356,29 @@ public class CovidVisualizer extends Application{
 				new LineChart<String,Number>(xAxis,yAxis);
 
 		XYChart.Series series1 = new XYChart.Series();
-		bc.prefWidthProperty().bind(this.flowRight.widthProperty());
-
 
 		for (int i=0; i<csvDataRows.size(); i++){
 			series1.getData().add(new XYChart.Data(getDateString(csvDataRows.get(i).getLastUpdated()), csvDataRows.get(i).getConfirmed()));
 		}
 		series1.setName("Confirmed cases - trend " + cmbCountries.getSelectionModel().getSelectedItem());
+		bc.getData().addAll(series1);
+
+		this.flowRight.getChildren().clear();
+		this.flowRight.getChildren().add(bc);
+	}
+
+	private void createDistributedTrendGraph(final List<DailyCase> csvDataRows){
+		final CategoryAxis xAxis = new CategoryAxis();
+		final NumberAxis yAxis = new NumberAxis();
+		final LineChart<String,Number> bc =
+				new LineChart<String,Number>(xAxis,yAxis);
+
+		XYChart.Series series1 = new XYChart.Series();
+
+		for (int i=0; i<csvDataRows.size(); i++){
+			series1.getData().add(new XYChart.Data(getDateString(csvDataRows.get(i).getDateTime()), csvDataRows.get(i).getNumber()));
+		}
+		series1.setName("Number of new cases/day in " + cmbCountries.getSelectionModel().getSelectedItem());
 		bc.getData().addAll(series1);
 
 		this.flowRight.getChildren().clear();
