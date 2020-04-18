@@ -49,10 +49,13 @@ public class CovidVisualizer extends Application{
 	private FlowPane flowFilter;
 	private Label lblFilterHeadingCompareCountries;
 	private DatePicker datePicker;
-	private ToggleGroup toggleGroup;
+	private ToggleGroup tGroupMetricType;
 	private Label lblErrorMessage;
 	private ComboBox<String> cmbCountries = new ComboBox<>();
 	private Label lblFilterHeadingShowTrendForCountry;
+	private ToggleGroup tGroupCountType;
+	private RadioButton radCumulative;
+	private RadioButton radDistributed;
 
 	private GitService gitService;
 	private CsvReader csvReader;
@@ -65,7 +68,6 @@ public class CovidVisualizer extends Application{
 		stage.setScene(this.scene);
 		stage.show();
 		this.initLayout();
-
 	}
 
 	public static void main(String[] args) {
@@ -90,11 +92,12 @@ public class CovidVisualizer extends Application{
 		this.createFilterFlowPane();
 		this.createFilterHeadingCompareCountries();
 		this.createDatePicker();
-		this.createRadioButtons();
+		this.createMetricsTypeRadioButtons();
 		this.createErrorMessageLabel();
 		//this.lblFilterHeadingCompareCountries.prefWidthProperty().bind(this.flowFilter.widthProperty());
 		this.createFilterHeadingTrend();
 		this.createCountryCombobox();
+		this.createCountTypeRadioButtons();
 	}
 
 	private void createBorderPane(){
@@ -227,25 +230,25 @@ public class CovidVisualizer extends Application{
 		this.flowFilter.getChildren().add(this.lblFilterHeadingCompareCountries);
 	}
 
-	private void createRadioButtons(){
-		this.toggleGroup = new ToggleGroup();
+	private void createMetricsTypeRadioButtons(){
+		this.tGroupMetricType = new ToggleGroup();
 
 		RadioButton radConfirmed = new RadioButton("confirmed");
-		radConfirmed.setToggleGroup(toggleGroup);
+		radConfirmed.setToggleGroup(tGroupMetricType);
 		radConfirmed.setPadding(new Insets(5, 5, 5, 0));
 
 		RadioButton radRecovered = new RadioButton("recovered");
-		radRecovered.setToggleGroup(toggleGroup);
+		radRecovered.setToggleGroup(tGroupMetricType);
 		radRecovered.setPadding(new Insets(0, 0, 5, 0));
 
 		RadioButton radDeaths = new RadioButton("deaths");
-		radDeaths.setToggleGroup(toggleGroup);
+		radDeaths.setToggleGroup(tGroupMetricType);
 		radRecovered.setPadding(new Insets(0, 0, 5, 0));
 
-		toggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
+		tGroupMetricType.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
 			public void changed(ObservableValue<? extends Toggle> ov,
 								Toggle old_toggle, Toggle new_toggle) {
-				if (toggleGroup.getSelectedToggle() != null) {
+				if (tGroupMetricType.getSelectedToggle() != null) {
 					LocalTime lt = LocalTime.MAX;
 					if (datePicker.getValue() != null) {
 						LocalDateTime ldt = LocalDateTime.of(datePicker.getValue(), lt);
@@ -272,7 +275,6 @@ public class CovidVisualizer extends Application{
 		return metricsType;
 	}
 
-
 	private void createDatePicker(){
 		this.datePicker = new DatePicker();
 
@@ -283,8 +285,8 @@ public class CovidVisualizer extends Application{
 					LocalTime lt = LocalTime.MAX;
 					LocalDateTime ldt = LocalDateTime.of(t1, lt);
 					List<CsvDataRow> data = null;
-					if (toggleGroup.getSelectedToggle() != null) {
-						MetricsType metricsType = getMetricsType(toggleGroup.getSelectedToggle().toString());
+					if (tGroupMetricType.getSelectedToggle() != null) {
+						MetricsType metricsType = getMetricsType(tGroupMetricType.getSelectedToggle().toString());
 						data = dataFilterService.getDataByDateAndMetricsType(rawCsvData, ldt, metricsType);
 						createCountryGraph(data, metricsType);
 					}else{
@@ -323,16 +325,25 @@ public class CovidVisualizer extends Application{
 			public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
 				if (cmbCountries.getSelectionModel().getSelectedItem() != null) {
 					System.out.println("create a graph for " + cmbCountries.getSelectionModel().getSelectedItem());
-					//List<CsvDataRow> data = dataFilterService.getDataForCountry(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
-					//createTrendGraph(data);
-					List<DailyCase> dailyCases = dataFilterService.getCasesByCountrySortedByDate(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
-					createDistributedTrendGraph(dailyCases);
+					if (radDistributed.isSelected()) {
+						List<DailyCase> dailyCases = dataFilterService.getCasesByCountrySortedByDate(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
+						createDistributedTrendGraph(dailyCases);
+					}else{
+						List<CsvDataRow> data = dataFilterService.getDataForCountry(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
+						createTrendGraph(data);
+					}
 				}
 			}
 		});
 
 		this.flowFilter.getChildren().add(this.cmbCountries);
 		new ComboBoxAutoComplete<String>(cmbCountries);
+	}
+
+	private void createFilterHeadingTrend(){
+		this.lblFilterHeadingShowTrendForCountry = new Label("Trend by country");
+		this.lblFilterHeadingShowTrendForCountry.setPadding(new Insets(5, 5, 5, 0));
+		this.flowFilter.getChildren().add(this.lblFilterHeadingShowTrendForCountry);
 	}
 
 	private void updateCountryComboBox(){
@@ -343,10 +354,30 @@ public class CovidVisualizer extends Application{
 		lblReadInfo.setText(cmbCountries.getSelectionModel().getSelectedItem());
 	}
 
-	private void createFilterHeadingTrend(){
-		this.lblFilterHeadingShowTrendForCountry = new Label("Trend by country");
-		this.lblFilterHeadingShowTrendForCountry.setPadding(new Insets(5, 5, 5, 0));
-		this.flowFilter.getChildren().add(this.lblFilterHeadingShowTrendForCountry);
+	private void createCountTypeRadioButtons(){
+		this.tGroupCountType = new ToggleGroup();
+
+		radCumulative = new RadioButton("cumulative");
+		radCumulative.setToggleGroup(tGroupCountType);
+		radCumulative.setPadding(new Insets(5, 5, 5, 0));
+
+		radDistributed = new RadioButton("distributed");
+		radDistributed.setToggleGroup(tGroupCountType);
+		radDistributed.setPadding(new Insets(0, 0, 5, 0));
+
+		tGroupCountType.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
+			public void changed(ObservableValue<? extends Toggle> ov,
+								Toggle old_toggle, Toggle new_toggle) {
+				if (radCumulative.isSelected()) {
+					List<CsvDataRow> data = dataFilterService.getDataForCountry(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
+					createTrendGraph(data);
+				}else if (radDistributed.isSelected()){
+					createDistributedTrendGraph(dataFilterService.getCasesByCountrySortedByDate(rawCsvData, cmbCountries.getValue()));
+				}
+			}
+		});
+
+		this.flowFilter.getChildren().addAll(radCumulative, radDistributed);
 	}
 
 	private void createTrendGraph(final List<CsvDataRow> csvDataRows){
