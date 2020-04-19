@@ -401,8 +401,8 @@ public class CovidVisualizer extends Application{
 	private void createDistributedTrendGraph(final List<DailyCase> csvDataRows){
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
-		final LineChart<String,Number> bc =
-				new LineChart<String,Number>(xAxis,yAxis);
+		final BarChart<String,Number> bc =
+				new BarChart<String,Number>(xAxis,yAxis);
 
 		XYChart.Series series1 = new XYChart.Series();
 
