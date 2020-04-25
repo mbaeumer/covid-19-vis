@@ -24,12 +24,15 @@ import se.mbaeumer.covid19vis.services.DirectoryService;
 import se.mbaeumer.covid19vis.services.GitService;
 import se.mbaeumer.covid19vis.ui.ComboBoxAutoComplete;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Properties;
 
 public class CovidVisualizer extends Application{
 
@@ -62,7 +65,7 @@ public class CovidVisualizer extends Application{
 	private DataFilterService dataFilterService;
 	private List<CsvDataRow> rawCsvData;
 
-	public void start(Stage stage) {
+	public void start(Stage stage) throws IOException {
 		this.scene = new Scene(this.root, 1100, 700, Color.LIGHTGRAY);
 		stage.setTitle("COVID-19 visualizer");
 		stage.setScene(this.scene);
@@ -74,7 +77,8 @@ public class CovidVisualizer extends Application{
 		launch(args);
 	}
 	
-	public void initLayout() {
+	public void initLayout() throws IOException {
+		this.readConfigFile();
 		this.gitService = new GitService();
 		this.csvReader = new CsvReader(new DirectoryService());
 		this.dataFilterService = new DataFilterService();
@@ -98,6 +102,38 @@ public class CovidVisualizer extends Application{
 		this.createFilterHeadingTrend();
 		this.createCountryCombobox();
 		this.createCountTypeRadioButtons();
+	}
+
+	private void readConfigFile() throws IOException {
+		InputStream inputStream = null;
+		try {
+			Properties prop = new Properties();
+			String propFileName = "config.properties";
+
+			inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+
+			if (inputStream != null) {
+				prop.load(inputStream);
+			} else {
+				throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
+			}
+
+			// get the property value and print it out
+			String user = prop.getProperty("user");
+			String company1 = prop.getProperty("company1");
+			String company2 = prop.getProperty("company2");
+			String company3 = prop.getProperty("company3");
+
+			System.out.println("Company List = " + company1 + ", " + company2 + ", " + company3);
+			//System.out.println(result + "\nProgram Ran on " + time + " by user=" + user);
+		} catch (Exception e) {
+			System.out.println("Exception: " + e);
+		} finally {
+			if (inputStream != null) {
+				inputStream.close();
+			}
+		}
+
 	}
 
 	private void createBorderPane(){
@@ -142,7 +178,7 @@ public class CovidVisualizer extends Application{
 	}
 
 	private void createPlaceHolder(){
-		this.lblPlaceholder = new Label("Placeholder");
+		this.lblPlaceholder = new Label("No data available");
 		this.lblPlaceholder.setPadding(new Insets(10));
 		this.flowRight.getChildren().add(this.lblPlaceholder);
 	}
@@ -381,6 +417,11 @@ public class CovidVisualizer extends Application{
 	}
 
 	private void createTrendGraph(final List<CsvDataRow> csvDataRows){
+		if (csvDataRows.size() == 0){
+			handleEmptyData();
+			return;
+		}
+
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
 		final LineChart<String,Number> bc =
@@ -399,6 +440,11 @@ public class CovidVisualizer extends Application{
 	}
 
 	private void createDistributedTrendGraph(final List<DailyCase> csvDataRows){
+		if (csvDataRows.size() == 0){
+			handleEmptyData();
+			return;
+		}
+
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
 		final BarChart<String,Number> bc =
@@ -421,6 +467,10 @@ public class CovidVisualizer extends Application{
 	}
 
 	private void createCountryGraph(final List<CsvDataRow> csvDataRows, final MetricsType metricsType){
+		if (csvDataRows.size() == 0){
+			handleEmptyData();
+			return;
+		}
 		final CategoryAxis xAxis = new CategoryAxis();
 		final NumberAxis yAxis = new NumberAxis();
 		final BarChart<String,Number> bc =
@@ -458,5 +508,10 @@ public class CovidVisualizer extends Application{
 		}
 		return series1;
 
+	}
+
+	private void handleEmptyData(){
+		this.flowRight.getChildren().clear();
+		this.flowRight.getChildren().add(this.lblPlaceholder);
 	}
 }
