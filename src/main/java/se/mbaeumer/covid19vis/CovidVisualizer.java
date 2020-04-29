@@ -15,18 +15,18 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.paint.Color;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import se.mbaeumer.covid19vis.services.DailyCase;
-import se.mbaeumer.covid19vis.services.DataFilterService;
-import se.mbaeumer.covid19vis.services.DirectoryService;
-import se.mbaeumer.covid19vis.services.GitService;
+import se.mbaeumer.covid19vis.services.*;
 import se.mbaeumer.covid19vis.ui.ComboBoxAutoComplete;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -36,12 +36,17 @@ import java.util.Properties;
 
 public class CovidVisualizer extends Application{
 
+	private static final String DATA_FOLDER_TEXT="Data folder: ";
+	private static final String NOT_SET="not set";
+
 	private Group root = new Group();
 	private Scene scene;
 	private BorderPane borderPane;
 	private FlowPane flowGeneral;
 	private FlowPane flowGitCommands;
 	private FlowPane flowRight;
+	private Label lblFolder;
+	private Button btnChooseFolder;
 	private Button btnClone;
 	private Button btnPull;
 	private FlowPane flowReadCommands;
@@ -63,30 +68,46 @@ public class CovidVisualizer extends Application{
 	private GitService gitService;
 	private CsvReader csvReader;
 	private DataFilterService dataFilterService;
+	private ConfigService configService;
 	private List<CsvDataRow> rawCsvData;
 
 	public void start(Stage stage) throws IOException {
-		this.scene = new Scene(this.root, 1100, 700, Color.LIGHTGRAY);
+		this.scene = new Scene(this.root, 900, 800, Color.LIGHTGRAY);
 		stage.setTitle("COVID-19 visualizer");
 		stage.setScene(this.scene);
 		stage.show();
+		this.initServices();
 		this.initLayout();
+		this.initConfig();
 	}
 
 	public static void main(String[] args) {
 		launch(args);
 	}
-	
-	public void initLayout() throws IOException {
-		this.readConfigFile();
+
+	private void initConfig() throws IOException {
+		this.configService = new ConfigService();
+		try {
+			this.configService.readConfigFile();
+		}catch(InvalidParameterException ex){
+			lblGitInfo.setText(ex.getMessage());
+		}
+	}
+
+	private void initServices(){
 		this.gitService = new GitService();
 		this.csvReader = new CsvReader(new DirectoryService());
 		this.dataFilterService = new DataFilterService();
+	}
+	
+	public void initLayout(){
 		this.createBorderPane();
 		this.createGeneralFlowPane();
 		this.createRightFlowPane();
 		this.createPlaceHolder();
 		this.createGitFlowPane();
+		this.createFolderInfoLabel();
+		this.createFolderButton();
 		this.createCloneButton();
 		this.createPullButton();
 		this.createGitInfoLabel();
@@ -98,42 +119,9 @@ public class CovidVisualizer extends Application{
 		this.createDatePicker();
 		this.createMetricsTypeRadioButtons();
 		this.createErrorMessageLabel();
-		//this.lblFilterHeadingCompareCountries.prefWidthProperty().bind(this.flowFilter.widthProperty());
 		this.createFilterHeadingTrend();
 		this.createCountryCombobox();
 		this.createCountTypeRadioButtons();
-	}
-
-	private void readConfigFile() throws IOException {
-		InputStream inputStream = null;
-		try {
-			Properties prop = new Properties();
-			String propFileName = "config.properties";
-
-			inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
-
-			if (inputStream != null) {
-				prop.load(inputStream);
-			} else {
-				throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
-			}
-
-			// get the property value and print it out
-			String user = prop.getProperty("user");
-			String company1 = prop.getProperty("company1");
-			String company2 = prop.getProperty("company2");
-			String company3 = prop.getProperty("company3");
-
-			System.out.println("Company List = " + company1 + ", " + company2 + ", " + company3);
-			//System.out.println(result + "\nProgram Ran on " + time + " by user=" + user);
-		} catch (Exception e) {
-			System.out.println("Exception: " + e);
-		} finally {
-			if (inputStream != null) {
-				inputStream.close();
-			}
-		}
-
 	}
 
 	private void createBorderPane(){
@@ -147,7 +135,6 @@ public class CovidVisualizer extends Application{
 		this.flowGeneral.setOrientation(Orientation.VERTICAL);
 		this.flowGeneral.setPrefWrapLength(700);
 		this.flowGeneral.setVgap(10);
-
 
 		this.flowGeneral.setBackground(createBackground());
 		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
@@ -188,7 +175,30 @@ public class CovidVisualizer extends Application{
 		this.flowGitCommands.setOrientation(Orientation.HORIZONTAL);
 		this.flowGitCommands.setHgap(10);
 		this.flowGitCommands.setPadding(new Insets(10,5,0,10));
-		this.flowGeneral.getChildren().add(this.flowGitCommands);
+		this.flowGitCommands.setBackground(createBackground());
+		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
+		this.flowGitCommands.setEffect(dropShadow);
+		this.flowGitCommands.setPrefHeight(45);
+		this.borderPane.setTop(this.flowGitCommands);
+	}
+
+	private void createFolderInfoLabel(){
+		this.lblFolder = new Label();
+		this.lblFolder.setText(DATA_FOLDER_TEXT + NOT_SET);
+		this.flowGitCommands.getChildren().add(this.lblFolder);
+	}
+
+	private void createFolderButton(){
+		this.btnChooseFolder = new Button("Select folder");
+		this.btnChooseFolder.setOnAction(actionEvent -> {
+			DirectoryChooser directoryChooser = new DirectoryChooser();
+			File selectedDirectory = directoryChooser.showDialog(flowGitCommands.getScene().getWindow());
+			if (selectedDirectory != null){
+				lblFolder.setText(DATA_FOLDER_TEXT + selectedDirectory.getAbsolutePath());
+			}
+		});
+
+		this.flowGitCommands.getChildren().add(this.btnChooseFolder);
 	}
 
 	private void createCloneButton(){
@@ -231,7 +241,7 @@ public class CovidVisualizer extends Application{
 		this.flowReadCommands = new FlowPane();
 		this.flowReadCommands.setOrientation(Orientation.HORIZONTAL);
 		this.flowReadCommands.setHgap(10);
-		this.flowReadCommands.setPadding(new Insets(5, 5, 0, 10));
+		this.flowReadCommands.setPadding(new Insets(10, 5, 0, 10));
 		this.flowGeneral.getChildren().add(this.flowReadCommands);
 	}
 
