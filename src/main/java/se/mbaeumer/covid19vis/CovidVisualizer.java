@@ -23,23 +23,19 @@ import se.mbaeumer.covid19vis.services.*;
 import se.mbaeumer.covid19vis.ui.ComboBoxAutoComplete;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Properties;
 
 public class CovidVisualizer extends Application{
 
 	private static final String DATA_FOLDER_TEXT="Data folder: ";
 	private static final String NOT_SET="not set";
 
-	private Group root = new Group();
 	private Scene scene;
 	private BorderPane borderPane;
 	private FlowPane flowGeneral;
@@ -74,7 +70,8 @@ public class CovidVisualizer extends Application{
 	private List<CsvDataRow> rawCsvData;
 
 	public void start(Stage stage) throws IOException {
-		this.scene = new Scene(this.root, 900, 800, Color.LIGHTGRAY);
+		this.createBorderPane();
+		this.scene = new Scene(this.borderPane, 900, 800, Color.LIGHTGRAY);
 		stage.setTitle("COVID-19 visualizer");
 		stage.setScene(this.scene);
 		stage.show();
@@ -91,6 +88,7 @@ public class CovidVisualizer extends Application{
 		this.configService = new ConfigService();
 		try {
 			this.configService.readConfigFile();
+			validateDirectory(new File(this.configService.getBaseDataFolder()));
 		}catch(InvalidParameterException ex){
 			lblGitInfo.setText(ex.getMessage());
 		}
@@ -115,7 +113,6 @@ public class CovidVisualizer extends Application{
 	}
 	
 	public void initLayout(){
-		this.createBorderPane();
 		this.createGeneralFlowPane();
 		this.createRightFlowPane();
 		this.createPlaceHolder();
@@ -137,12 +134,11 @@ public class CovidVisualizer extends Application{
 		this.createFilterHeadingTrend();
 		this.createCountryCombobox();
 		this.createCountTypeRadioButtons();
+		this.printSizesAndLocation();
 	}
 
 	private void createBorderPane(){
 		this.borderPane = new BorderPane();
-
-		this.root.getChildren().add(this.borderPane);
 	}
 	
 	public void createGeneralFlowPane() {
@@ -173,10 +169,10 @@ public class CovidVisualizer extends Application{
 		this.flowRight.setBackground(createBackground());
 		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
 		this.flowRight.setEffect(dropShadow);
-		this.flowRight.prefHeightProperty().bind(this.flowGeneral.prefHeightProperty());
-		this.flowRight.prefWidthProperty().bind(this.flowGeneral.widthProperty());
+		this.flowRight.prefHeightProperty().bind(this.flowGeneral.heightProperty());
+		//this.flowRight.widthProperty().bind(this.flowGeneral.widthProperty());
 
-		this.borderPane.setRight(this.flowRight);
+		this.borderPane.setCenter(this.flowRight);
 	}
 
 	private void createPlaceHolder(){
@@ -271,13 +267,23 @@ public class CovidVisualizer extends Application{
 	private void createReadRawDataButton(){
 		this.btnReadRawData = new Button("Read raw data");
 		this.btnReadRawData.setOnAction(actionEvent -> {
+			printSizesAndLocation();
 			csvReader.readMultipleCsvFiles(GitService.LOCAL_PATH + GitService.DATA_PATH);
 			rawCsvData = csvReader.getCsvDataRowList();
 			updateCountryComboBox();
 			lblReadInfo.setText("Successfully read data: " + rawCsvData.size());
+			printSizesAndLocation();
 		});
 
 		this.flowReadCommands.getChildren().add(this.btnReadRawData);
+	}
+
+	private void printSizesAndLocation(){
+		System.out.println("borderPane width: " + borderPane.widthProperty().getValue());
+		System.out.println("flowRight x: " + flowRight.getLayoutX());
+		System.out.println("flowRight y: " + flowRight.getLayoutY());
+		System.out.println("flowRight w: " + flowRight.widthProperty().getValue());
+		System.out.println("flowLeft w: " + flowGeneral.widthProperty().getValue());
 	}
 
 	private void createReadInfoLabel(){
@@ -510,7 +516,7 @@ public class CovidVisualizer extends Application{
 				new BarChart<String,Number>(xAxis,yAxis);
 
 		XYChart.Series series1 = new XYChart.Series();
-		bc.prefWidthProperty().bind(this.flowRight.widthProperty());
+		//bc.prefWidthProperty().bind(this.flowRight.widthProperty());
 
 		series1 = createDataSeries(csvDataRows, metricsType);
 		bc.getData().clear();
