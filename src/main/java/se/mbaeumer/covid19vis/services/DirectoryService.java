@@ -24,7 +24,22 @@ public class DirectoryService {
                 .findFirst().orElseThrow(FileNotFoundException::new);
 
         return filename;
+    }
 
+    public DirectoryValidationResult validateDirectory(final String path){
+        DirectoryValidationResult result = DirectoryValidationResult.CSV_FILES;
+        File directory = new File(path);
+        List<File> files = Arrays.asList(directory.listFiles());
+        if (files.size() == 0){
+            result = DirectoryValidationResult.EMPTY;
+        }else{
+            List<String> csvFileNames = getAllCsvFilenames(path);
+            if (csvFileNames.size() == 0){
+                result = DirectoryValidationResult.NO_CSV_FILES;
+            }
+        }
+
+        return result;
     }
 
 }

@@ -44,6 +44,7 @@ public class CovidVisualizer extends Application{
 	private BorderPane borderPane;
 	private FlowPane flowGeneral;
 	private FlowPane flowGitCommands;
+	private FlowPane flowGitInfo;
 	private FlowPane flowRight;
 	private Label lblFolder;
 	private Button btnChooseFolder;
@@ -69,6 +70,7 @@ public class CovidVisualizer extends Application{
 	private CsvReader csvReader;
 	private DataFilterService dataFilterService;
 	private ConfigService configService;
+	private DirectoryService directoryService;
 	private List<CsvDataRow> rawCsvData;
 
 	public void start(Stage stage) throws IOException {
@@ -94,9 +96,21 @@ public class CovidVisualizer extends Application{
 		}
 	}
 
+	private void validateDirectory(final File file){
+		DirectoryValidationResult result = this.directoryService.validateDirectory(file.getAbsolutePath());
+		if (result == DirectoryValidationResult.EMPTY){
+			lblGitInfo.setText("The directory is empty! Continue cloning the repository!");
+		}else if (result == DirectoryValidationResult.CSV_FILES){
+			lblGitInfo.setText("The directory already contains csv files. Continue pulling!");
+		}else{
+			lblGitInfo.setText("The directory is not empty and is not suitable for the data");
+		}
+	}
+
 	private void initServices(){
 		this.gitService = new GitService();
-		this.csvReader = new CsvReader(new DirectoryService());
+		this.directoryService = new DirectoryService();
+		this.csvReader = new CsvReader(this.directoryService);
 		this.dataFilterService = new DataFilterService();
 	}
 	
@@ -110,6 +124,7 @@ public class CovidVisualizer extends Application{
 		this.createFolderButton();
 		this.createCloneButton();
 		this.createPullButton();
+		this.createGitInfoFlowPane();
 		this.createGitInfoLabel();
 		this.createReadFlowPane();
 		this.createReadRawDataButton();
@@ -178,7 +193,7 @@ public class CovidVisualizer extends Application{
 		this.flowGitCommands.setBackground(createBackground());
 		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
 		this.flowGitCommands.setEffect(dropShadow);
-		this.flowGitCommands.setPrefHeight(45);
+		this.flowGitCommands.setPrefHeight(70);
 		this.borderPane.setTop(this.flowGitCommands);
 	}
 
@@ -195,6 +210,7 @@ public class CovidVisualizer extends Application{
 			File selectedDirectory = directoryChooser.showDialog(flowGitCommands.getScene().getWindow());
 			if (selectedDirectory != null){
 				lblFolder.setText(DATA_FOLDER_TEXT + selectedDirectory.getAbsolutePath());
+				validateDirectory(selectedDirectory);
 			}
 		});
 
@@ -232,9 +248,16 @@ public class CovidVisualizer extends Application{
 		this.flowGitCommands.getChildren().add(this.btnPull);
 	}
 
+	private void createGitInfoFlowPane(){
+		this.flowGitInfo = new FlowPane();
+		this.flowGitInfo.setPadding(new Insets(5, 5, 0, 0));
+		this.flowGitInfo.prefWidthProperty().bind(this.flowGitCommands.widthProperty());
+		this.flowGitCommands.getChildren().add(this.flowGitInfo);
+	}
+
 	private void createGitInfoLabel(){
 		this.lblGitInfo = new Label("Info");
-		this.flowGitCommands.getChildren().add(lblGitInfo);
+		this.flowGitInfo.getChildren().add(lblGitInfo);
 	}
 
 	private void createReadFlowPane(){
