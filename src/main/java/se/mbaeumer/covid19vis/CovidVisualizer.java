@@ -5,7 +5,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.*;
 import javafx.scene.control.*;
@@ -91,6 +90,7 @@ public class CovidVisualizer extends Application{
 			validateDirectory(new File(this.configService.getBaseDataFolder()));
 		}catch(InvalidParameterException ex){
 			lblGitInfo.setText(ex.getMessage());
+			deactivateControls();
 		}
 	}
 
@@ -98,11 +98,34 @@ public class CovidVisualizer extends Application{
 		DirectoryValidationResult result = this.directoryService.validateDirectory(file.getAbsolutePath());
 		if (result == DirectoryValidationResult.EMPTY){
 			lblGitInfo.setText("The directory is empty! Continue cloning the repository!");
+			activateControls();
 		}else if (result == DirectoryValidationResult.CSV_FILES){
 			lblGitInfo.setText("The directory already contains csv files. Continue pulling!");
+			activateControls();
 		}else{
 			lblGitInfo.setText("The directory is not empty and is not suitable for the data");
+			deactivateControls();
 		}
+	}
+
+	private void deactivateControls(){
+		this.btnClone.setDisable(true);
+		this.btnPull.setDisable(true);
+		this.btnReadRawData.setDisable(true);
+		this.datePicker.setDisable(true);
+		this.cmbCountries.setDisable(true);
+		this.radCumulative.setDisable(true);
+		this.radDistributed.setDisable(true);
+	}
+
+	private void activateControls(){
+		this.btnClone.setDisable(false);
+		this.btnPull.setDisable(false);
+		this.btnReadRawData.setDisable(false);
+		this.datePicker.setDisable(false);
+		this.cmbCountries.setDisable(false);
+		this.radCumulative.setDisable(false);
+		this.radDistributed.setDisable(false);
 	}
 
 	private void initServices(){
