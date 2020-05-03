@@ -91,11 +91,13 @@ public class CovidVisualizer extends Application{
 		}catch(InvalidParameterException ex){
 			lblGitInfo.setText(ex.getMessage());
 			deactivateControls();
+			lblGitInfo.setTextFill(Color.ORANGERED);
 		}
 	}
 
 	private void validateDirectory(final File file){
 		DirectoryValidationResult result = this.directoryService.validateDirectory(file.getAbsolutePath());
+		lblGitInfo.setTextFill(Color.FORESTGREEN);
 		if (result == DirectoryValidationResult.EMPTY){
 			lblGitInfo.setText("The directory is empty! Continue cloning the repository!");
 			activateControls();
@@ -105,6 +107,7 @@ public class CovidVisualizer extends Application{
 		}else{
 			lblGitInfo.setText("The directory is not empty and is not suitable for the data");
 			deactivateControls();
+			lblGitInfo.setTextFill(Color.ORANGERED);
 		}
 	}
 
@@ -193,7 +196,7 @@ public class CovidVisualizer extends Application{
 		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
 		this.flowRight.setEffect(dropShadow);
 		this.flowRight.prefHeightProperty().bind(this.flowGeneral.heightProperty());
-		//this.flowRight.widthProperty().bind(this.flowGeneral.widthProperty());
+		this.flowRight.prefWidthProperty().bind(this.flowGeneral.widthProperty());
 
 		this.borderPane.setCenter(this.flowRight);
 	}
@@ -213,6 +216,8 @@ public class CovidVisualizer extends Application{
 		DropShadow dropShadow = new DropShadow(5, Color.GRAY);
 		this.flowGitCommands.setEffect(dropShadow);
 		this.flowGitCommands.setPrefHeight(70);
+		this.flowGitCommands.setPrefWidth(890);
+
 		this.borderPane.setTop(this.flowGitCommands);
 	}
 
@@ -230,6 +235,7 @@ public class CovidVisualizer extends Application{
 			if (selectedDirectory != null){
 				lblFolder.setText(DATA_FOLDER_TEXT + selectedDirectory.getAbsolutePath());
 				validateDirectory(selectedDirectory);
+				printSizesAndLocation();
 			}
 		});
 
@@ -307,6 +313,9 @@ public class CovidVisualizer extends Application{
 		System.out.println("flowRight y: " + flowRight.getLayoutY());
 		System.out.println("flowRight w: " + flowRight.widthProperty().getValue());
 		System.out.println("flowLeft w: " + flowGeneral.widthProperty().getValue());
+		System.out.println("flowGitCommands w: " + flowGitCommands.widthProperty().getValue());
+		System.out.println("flowGitInfo w: " + flowGitInfo.widthProperty().getValue());
+
 	}
 
 	private void createReadInfoLabel(){

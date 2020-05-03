@@ -1,6 +1,5 @@
 package se.mbaeumer.covid19vis.services;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -23,7 +22,7 @@ public class DirectoryServiceTest {
         DirectoryService directoryService = new DirectoryService();
 
         DirectoryValidationResult result = directoryService.validateDirectory("");
-        Assert.assertTrue(result == DirectoryValidationResult.EMPTY);
+        assertTrue(result == DirectoryValidationResult.EMPTY);
     }
 
     @Test
@@ -31,8 +30,17 @@ public class DirectoryServiceTest {
         mockDirectoryWithNoCsvFiles();
         DirectoryService directoryService = new DirectoryService();
 
-        DirectoryValidationResult result = directoryService.validateDirectory("");
-        Assert.assertTrue(result == DirectoryValidationResult.NO_CSV_FILES);
+        DirectoryValidationResult result = directoryService.validateDirectory("/baseDir");
+        assertTrue(result == DirectoryValidationResult.NO_CSV_FILES);
+    }
+
+    @Test
+    public void shouldGetNoCsvFilesIfSubDirectoryNotExists() throws Exception {
+        mockDirectoryWithNoSubDirectory();
+        DirectoryService directoryService = new DirectoryService();
+
+        DirectoryValidationResult result = directoryService.validateDirectory("/baseDir");
+        assertTrue(result == DirectoryValidationResult.NO_CSV_FILES);
     }
 
     @Test
@@ -40,8 +48,8 @@ public class DirectoryServiceTest {
         mockDirectoryWithCsvFile();
         DirectoryService directoryService = new DirectoryService();
 
-        DirectoryValidationResult result = directoryService.validateDirectory("");
-        Assert.assertTrue(result == DirectoryValidationResult.CSV_FILES);
+        DirectoryValidationResult result = directoryService.validateDirectory("/baseDir");
+        assertTrue(result == DirectoryValidationResult.CSV_FILES);
     }
 
     private void mockEmptyDirectory() throws Exception {
@@ -52,22 +60,57 @@ public class DirectoryServiceTest {
     }
 
     private void mockDirectoryWithNoCsvFiles() throws Exception {
-        File mockedDirectory = Mockito.mock(File.class);
-        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments(anyString()).thenReturn(mockedDirectory);
-        Mockito.when(mockedDirectory.exists()).thenReturn(true);
-        File[] files = new File[1];
-        files[0] = Mockito.mock(File.class);
-        Mockito.when(files[0].getAbsolutePath()).thenReturn("test.txt");
-        Mockito.when(mockedDirectory.listFiles()).thenReturn(files);
+        File mockedBaseDirectory = Mockito.mock(File.class);
+        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments("/baseDir").thenReturn(mockedBaseDirectory);
+        Mockito.when(mockedBaseDirectory.exists()).thenReturn(true);
+
+        File mockedSubDirectory = Mockito.mock(File.class);
+        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments("/baseDir" + DirectoryService.DATA_PATH).thenReturn(mockedSubDirectory);
+        Mockito.when(mockedSubDirectory.exists()).thenReturn(true);
+        Mockito.when(mockedSubDirectory.getAbsolutePath()).thenReturn("/baseDir" + DirectoryService.DATA_PATH);
+
+        File[] contentBaseDirectory = new File[1];
+        contentBaseDirectory[0] = mockedSubDirectory;
+        Mockito.when(mockedBaseDirectory.listFiles()).thenReturn(contentBaseDirectory);
+
+        File[] contentSubDirectory = new File[1];
+        contentSubDirectory[0] = Mockito.mock(File.class);
+        Mockito.when(contentSubDirectory[0].getAbsolutePath()).thenReturn("test.txt");
+        Mockito.when(mockedSubDirectory.listFiles()).thenReturn(contentSubDirectory);
+    }
+
+    private void mockDirectoryWithNoSubDirectory() throws Exception {
+        File mockedBaseDirectory = Mockito.mock(File.class);
+        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments("/baseDir").thenReturn(mockedBaseDirectory);
+        Mockito.when(mockedBaseDirectory.exists()).thenReturn(true);
+
+        File mockedSubDirectory = Mockito.mock(File.class);
+        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments("/baseDir" + DirectoryService.DATA_PATH).thenReturn(mockedSubDirectory);
+        Mockito.when(mockedSubDirectory.exists()).thenReturn(false);
+
+        File[] contentBaseDirectory = new File[1];
+        contentBaseDirectory[0] = mockedSubDirectory;
+        Mockito.when(mockedBaseDirectory.listFiles()).thenReturn(contentBaseDirectory);
+
     }
 
     private void mockDirectoryWithCsvFile() throws Exception {
-        File mockedDirectory = Mockito.mock(File.class);
-        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments(anyString()).thenReturn(mockedDirectory);
-        Mockito.when(mockedDirectory.exists()).thenReturn(true);
+        File mockedBaseDirectory = Mockito.mock(File.class);
+        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments("/baseDir").thenReturn(mockedBaseDirectory);
+        Mockito.when(mockedBaseDirectory.exists()).thenReturn(true);
+
+        File mockedSubDirectory = Mockito.mock(File.class);
+        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments("/baseDir" + DirectoryService.DATA_PATH).thenReturn(mockedSubDirectory);
+        Mockito.when(mockedSubDirectory.exists()).thenReturn(true);
+        Mockito.when(mockedSubDirectory.getAbsolutePath()).thenReturn("/baseDir" + DirectoryService.DATA_PATH);
+
+        File[] contentBaseDirectory = new File[1];
+        contentBaseDirectory[0] = mockedSubDirectory;
+        Mockito.when(mockedBaseDirectory.listFiles()).thenReturn(contentBaseDirectory);
+
         File[] files = new File[1];
         files[0] = Mockito.mock(File.class);
         Mockito.when(files[0].getAbsolutePath()).thenReturn("test.csv");
-        Mockito.when(mockedDirectory.listFiles()).thenReturn(files);
+        Mockito.when(mockedSubDirectory.listFiles()).thenReturn(files);
     }
 }
