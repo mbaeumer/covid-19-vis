@@ -100,10 +100,13 @@ public class CovidVisualizer extends Application{
 		lblGitInfo.setTextFill(Color.FORESTGREEN);
 		if (result == DirectoryValidationResult.EMPTY){
 			lblGitInfo.setText("The directory is empty! Continue cloning the repository!");
-			activateControls();
+			deactivateControls();
+			btnClone.setDisable(false);
+			configService.setBaseDataFolder(file.getAbsolutePath());
 		}else if (result == DirectoryValidationResult.CSV_FILES){
 			lblGitInfo.setText("The directory already contains csv files. Continue pulling!");
 			activateControls();
+			configService.setBaseDataFolder(file.getAbsolutePath());
 		}else{
 			lblGitInfo.setText("The directory is not empty and is not suitable for the data");
 			deactivateControls();
@@ -246,11 +249,14 @@ public class CovidVisualizer extends Application{
 		this.btnClone = new Button("Clone");
 		this.btnClone.setOnAction(actionEvent -> {
 			try {
-				System.out.println("before...");
-				gitService.cloneRepository();
+				lblGitInfo.setText("Cloning the repository");
+				btnClone.setDisable(true);
+				gitService.cloneRepository(configService);
 				lblGitInfo.setText("Successfully cloned the repository");
 			} catch (GitAPIException | JGitInternalException e) {
 				lblGitInfo.setText(e.getMessage());
+			}finally {
+				btnClone.setDisable(false);
 			}
 		});
 
@@ -261,7 +267,7 @@ public class CovidVisualizer extends Application{
 		this.btnPull = new Button("Pull");
 		this.btnPull.setOnAction(actionEvent -> {
 			try {
-				gitService.pull();
+				gitService.pull(configService);
 				lblGitInfo.setText("Successfully pulled the repository");
 			} catch (GitAPIException | JGitInternalException e) {
 				lblGitInfo.setText(e.getMessage());
@@ -297,7 +303,7 @@ public class CovidVisualizer extends Application{
 		this.btnReadRawData = new Button("Read raw data");
 		this.btnReadRawData.setOnAction(actionEvent -> {
 			printSizesAndLocation();
-			csvReader.readMultipleCsvFiles(GitService.LOCAL_PATH + GitService.DATA_PATH);
+			csvReader.readMultipleCsvFiles(configService.getBaseDataFolder() + GitService.DATA_PATH);
 			rawCsvData = csvReader.getCsvDataRowList();
 			updateCountryComboBox();
 			lblReadInfo.setText("Successfully read data: " + rawCsvData.size());

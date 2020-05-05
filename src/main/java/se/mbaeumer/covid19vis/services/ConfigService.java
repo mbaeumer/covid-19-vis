@@ -14,6 +14,10 @@ public class ConfigService {
         return baseDataFolder;
     }
 
+    public void setBaseDataFolder(String baseDataFolder) {
+        this.baseDataFolder = baseDataFolder;
+    }
+
     public void readConfigFile() throws IOException, InvalidParameterException {
         InputStream inputStream;
         Properties prop = new Properties();
@@ -27,7 +31,6 @@ public class ConfigService {
             throw new FileNotFoundException("property file '" + propFileName + "' not found in the classpath");
         }
 
-        // get the property value and print it out
         baseDataFolder = prop.getProperty("repository.baseDir");
 
         if (baseDataFolder == null || baseDataFolder.length() == 0){
@@ -36,4 +39,6 @@ public class ConfigService {
 
         inputStream.close();
     }
+
+
 }
