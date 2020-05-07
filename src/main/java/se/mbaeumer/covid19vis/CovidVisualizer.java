@@ -1,8 +1,10 @@
 package se.mbaeumer.covid19vis;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
@@ -103,10 +105,12 @@ public class CovidVisualizer extends Application{
 			deactivateControls();
 			btnClone.setDisable(false);
 			configService.setBaseDataFolder(file.getAbsolutePath());
+			configService.writeConfigFile();
 		}else if (result == DirectoryValidationResult.CSV_FILES){
 			lblGitInfo.setText("The directory already contains csv files. Continue pulling!");
 			activateControls();
 			configService.setBaseDataFolder(file.getAbsolutePath());
+			configService.writeConfigFile();
 		}else{
 			lblGitInfo.setText("The directory is not empty and is not suitable for the data");
 			deactivateControls();
@@ -247,11 +251,17 @@ public class CovidVisualizer extends Application{
 
 	private void createCloneButton(){
 		this.btnClone = new Button("Clone");
+		this.btnClone.setOnAction(this::handleEvent);
+		/*
 		this.btnClone.setOnAction(actionEvent -> {
 			try {
-				lblGitInfo.setText("Cloning the repository");
-				btnClone.setDisable(true);
-				gitService.cloneRepository(configService);
+				lblGitInfo.setText("Started cloning...");
+				//lblGitInfo.setText("Cloning the repository");
+				//btnClone.setDisable(true);
+				//gitService.cloneRepository(configService);
+				//gitService.cloneRepository2(configService, lblGitInfo);
+				gitService.cloneRepository3(configService, lblGitInfo);
+				System.out.println("done");
 				lblGitInfo.setText("Successfully cloned the repository");
 			} catch (GitAPIException | JGitInternalException e) {
 				lblGitInfo.setText(e.getMessage());
@@ -259,8 +269,45 @@ public class CovidVisualizer extends Application{
 				btnClone.setDisable(false);
 			}
 		});
-
+	*/
 		this.flowGitCommands.getChildren().add(this.btnClone);
+	}
+
+	public void handleEvent(ActionEvent actionEvent){
+		new Thread(()-> {
+			try {
+				gitService.cloneRepository3(configService, lblGitInfo);
+			} catch (GitAPIException | JGitInternalException e) {
+				actionEvent.consume();
+				try {
+					stop();
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
+				return;
+
+			}
+			Platform.runLater(() -> {
+				lblGitInfo.setText("Started cloning...");
+			});
+		}).start();
+
+		/*
+		try {
+			lblGitInfo.setText("Started cloning...");
+			//lblGitInfo.setText("Cloning the repository");
+			//btnClone.setDisable(true);
+			//gitService.cloneRepository(configService);
+			//gitService.cloneRepository2(configService, lblGitInfo);
+
+			System.out.println("done");
+			lblGitInfo.setText("Successfully cloned the repository");
+		} catch (GitAPIException | JGitInternalException e) {
+			lblGitInfo.setText(e.getMessage());
+		}finally {
+			btnClone.setDisable(false);
+		}
+		*/
 	}
 
 	private void createPullButton(){

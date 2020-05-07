@@ -1,8 +1,6 @@
 package se.mbaeumer.covid19vis.services;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.security.InvalidParameterException;
 import java.util.Properties;
 
@@ -39,6 +37,25 @@ public class ConfigService {
 
         inputStream.close();
     }
+
+    public void writeConfigFile(){
+        try (OutputStream output = new FileOutputStream("src/main/resources/config.properties")) {
+
+            Properties prop = new Properties();
+
+            // set the properties value
+            prop.setProperty("repository.baseDir", baseDataFolder);
+
+            // save properties to project root folder
+            prop.store(output, null);
+
+            System.out.println(prop);
+
+        } catch (IOException io) {
+            io.printStackTrace();
+        }
+    }
+
 
 
 }
