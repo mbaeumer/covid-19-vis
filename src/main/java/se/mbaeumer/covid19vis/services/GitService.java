@@ -14,10 +14,14 @@ import java.io.IOException;
 
 public class GitService {
 
+    private Git git;
+
+    private CloneCommand cloneCommand;
+
     public static final String DATA_PATH = "/csse_covid_19_data/csse_covid_19_daily_reports/";
 
     public void cloneRepository(final ConfigService configService) throws GitAPIException {
-        Git git = Git.cloneRepository()
+        git = Git.cloneRepository()
                 .setURI("https://github.com/CSSEGISandData/COVID-19")
                 .setDirectory(new File(configService.getBaseDataFolder()))
                 .call();
@@ -25,14 +29,11 @@ public class GitService {
     }
 
     public void cloneRepository3(final ConfigService configService, Label label) throws GitAPIException {
-        Git git = Git.cloneRepository()
-                .setURI("https://github.com/CSSEGISandData/COVID-19")
-                .setDirectory(new File(configService.getBaseDataFolder()))
+        cloneCommand = Git.cloneRepository().setURI("https://github.com/CSSEGISandData/COVID-19")
+                .setDirectory(new File(configService.getBaseDataFolder()));
+        Git git = cloneCommand
                 .setProgressMonitor(new CustomMonitor(label))
                 .call();
-
-        // new ThreadSafeProgressMonitor(new CustomMonitor(label))
-
     }
 
     public void cloneRepository2(final ConfigService configService, final Label label) throws GitAPIException {
@@ -80,7 +81,7 @@ public class GitService {
     }
 
     public void pull(final ConfigService configService) throws IOException, GitAPIException {
-        Git git = Git.open(new File(configService.getBaseDataFolder()));
+        git = Git.open(new File(configService.getBaseDataFolder()));
         git.pull().call();
     }
 }
