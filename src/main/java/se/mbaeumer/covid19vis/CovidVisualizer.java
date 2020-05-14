@@ -112,9 +112,14 @@ public class CovidVisualizer extends Application{
 			activateControls();
 			configService.setBaseDataFolder(file.getAbsolutePath());
 			configService.writeConfigFile();
-		}else{
-			lblGitInfo.setText("The directory is not empty and is not suitable for the data");
+		}else if (result == DirectoryValidationResult.PATH_NOT_FOUND){
+			lblGitInfo.setText("The given directory does not exist!");
 			deactivateControls();
+			lblGitInfo.setTextFill(Color.ORANGERED);
+		}else{
+			lblGitInfo.setText("The directory is not empty and is not suitable for the data!");
+			deactivateControls();
+			btnClone.setDisable(false);
 			lblGitInfo.setTextFill(Color.ORANGERED);
 		}
 	}

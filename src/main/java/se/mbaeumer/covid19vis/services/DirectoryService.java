@@ -30,19 +30,23 @@ public class DirectoryService {
     public DirectoryValidationResult validateDirectory(final String baseDir){
         DirectoryValidationResult result = DirectoryValidationResult.CSV_FILES;
         File directory = new File(baseDir);
-        List<File> files = Arrays.asList(directory.listFiles());
-        if (files.size() == 0){
-            result = DirectoryValidationResult.EMPTY;
-        }else{
-            File subDirectory = new File(baseDir + DATA_PATH);
-            if (subDirectory.exists()) {
-                List<String> csvFileNames = getAllCsvFilenames(subDirectory.getAbsolutePath());
-                if (csvFileNames.size() == 0) {
+        if (directory.exists()){
+            List<File> files = Arrays.asList(directory.listFiles());
+            if (files.size() == 0){
+                result = DirectoryValidationResult.EMPTY;
+            }else{
+                File subDirectory = new File(baseDir + DATA_PATH);
+                if (subDirectory.exists()) {
+                    List<String> csvFileNames = getAllCsvFilenames(subDirectory.getAbsolutePath());
+                    if (csvFileNames.size() == 0) {
+                        result = DirectoryValidationResult.NO_CSV_FILES;
+                    }
+                }else{
                     result = DirectoryValidationResult.NO_CSV_FILES;
                 }
-            }else{
-                result = DirectoryValidationResult.NO_CSV_FILES;
             }
+        }else{
+            result = DirectoryValidationResult.PATH_NOT_FOUND;
         }
 
         return result;

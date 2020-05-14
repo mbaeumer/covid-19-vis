@@ -52,6 +52,21 @@ public class DirectoryServiceTest {
         assertTrue(result == DirectoryValidationResult.CSV_FILES);
     }
 
+    @Test
+    public void shouldGetPathNotFound() throws Exception {
+        mockPathNotExists();
+        DirectoryService directoryService = new DirectoryService();
+
+        DirectoryValidationResult result = directoryService.validateDirectory("/baseDir");
+        assertTrue(result == DirectoryValidationResult.PATH_NOT_FOUND);
+    }
+
+    private void mockPathNotExists() throws Exception{
+        File mockedDirectory = Mockito.mock(File.class);
+        PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments(anyString()).thenReturn(mockedDirectory);
+        Mockito.when(mockedDirectory.exists()).thenReturn(false);
+    }
+
     private void mockEmptyDirectory() throws Exception {
         File mockedDirectory = Mockito.mock(File.class);
         PowerMockito.whenNew(File.class).withParameterTypes(String.class).withArguments(anyString()).thenReturn(mockedDirectory);
