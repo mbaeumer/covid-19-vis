@@ -105,11 +105,13 @@ public class CovidVisualizer extends Application{
 			lblGitInfo.setText("The directory is empty! Continue cloning the repository!");
 			deactivateControls();
 			btnClone.setDisable(false);
+			lblFolder.setText(DATA_FOLDER_TEXT + file.getAbsolutePath());
 			configService.setBaseDataFolder(file.getAbsolutePath());
 			configService.writeConfigFile();
 		}else if (result == DirectoryValidationResult.CSV_FILES){
 			lblGitInfo.setText("The directory already contains csv files. Continue pulling!");
 			activateControls();
+			lblFolder.setText(DATA_FOLDER_TEXT + file.getAbsolutePath());
 			configService.setBaseDataFolder(file.getAbsolutePath());
 			configService.writeConfigFile();
 		}else if (result == DirectoryValidationResult.PATH_NOT_FOUND){
