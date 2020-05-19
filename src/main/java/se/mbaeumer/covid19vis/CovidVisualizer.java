@@ -37,6 +37,7 @@ public class CovidVisualizer extends Application{
 
 	private static final String DATA_FOLDER_TEXT="Data folder: ";
 	private static final String NOT_SET="not set";
+	private static final String NO_DATA_AVAILABLE="No data available yet";
 
 	private Scene scene;
 	private BorderPane borderPane;
@@ -175,7 +176,6 @@ public class CovidVisualizer extends Application{
 		this.createFilterHeadingTrend();
 		this.createCountryCombobox();
 		this.createCountTypeRadioButtons();
-		this.printSizesAndLocation();
 	}
 
 	private void createBorderPane(){
@@ -250,7 +250,7 @@ public class CovidVisualizer extends Application{
 			if (selectedDirectory != null){
 				lblFolder.setText(DATA_FOLDER_TEXT + selectedDirectory.getAbsolutePath());
 				validateDirectory(selectedDirectory);
-				printSizesAndLocation();
+				//printSizesAndLocation();
 			}
 		});
 
@@ -260,24 +260,7 @@ public class CovidVisualizer extends Application{
 	private void createCloneButton(){
 		this.btnClone = new Button("Clone");
 		this.btnClone.setOnAction(this::handleCloneEvent);
-		/*
-		this.btnClone.setOnAction(actionEvent -> {
-			try {
-				lblGitInfo.setText("Started cloning...");
-				//lblGitInfo.setText("Cloning the repository");
-				//btnClone.setDisable(true);
-				//gitService.cloneRepository(configService);
-				//gitService.cloneRepository2(configService, lblGitInfo);
-				gitService.cloneRepository3(configService, lblGitInfo);
-				System.out.println("done");
-				lblGitInfo.setText("Successfully cloned the repository");
-			} catch (GitAPIException | JGitInternalException e) {
-				lblGitInfo.setText(e.getMessage());
-			}finally {
-				btnClone.setDisable(false);
-			}
-		});
-	*/
+
 		this.flowGitCommands.getChildren().add(this.btnClone);
 	}
 
@@ -314,28 +297,6 @@ public class CovidVisualizer extends Application{
 		thread.setDaemon(true);
 		thread.start();
 
-
-		/*
-		new Thread(()-> {
-			try {
-				gitService.cloneRepository3(configService, lblGitInfo);
-			} catch (GitAPIException | JGitInternalException e) {
-				actionEvent.consume();
-				try {
-					stop();
-				} catch (Exception e1) {
-					e1.printStackTrace();
-				}
-				return;
-
-			}
-
-			Platform.runLater(() -> {
-				lblGitInfo.setText("Started cloning...");
-			});
-		}).start();
-		*/
-
 	}
 
 	private void createPullButton(){
@@ -362,7 +323,7 @@ public class CovidVisualizer extends Application{
 	}
 
 	private void createGitInfoLabel(){
-		this.lblGitInfo = new Label("Info");
+		this.lblGitInfo = new Label(NO_DATA_AVAILABLE);
 		this.flowGitInfo.getChildren().add(lblGitInfo);
 	}
 
@@ -377,12 +338,10 @@ public class CovidVisualizer extends Application{
 	private void createReadRawDataButton(){
 		this.btnReadRawData = new Button("Read raw data");
 		this.btnReadRawData.setOnAction(actionEvent -> {
-			printSizesAndLocation();
 			csvReader.readMultipleCsvFiles(configService.getBaseDataFolder() + GitService.DATA_PATH);
 			rawCsvData = csvReader.getCsvDataRowList();
 			updateCountryComboBox();
 			lblReadInfo.setText("Successfully read data: " + rawCsvData.size());
-			printSizesAndLocation();
 		});
 
 		this.flowReadCommands.getChildren().add(this.btnReadRawData);
@@ -400,7 +359,7 @@ public class CovidVisualizer extends Application{
 	}
 
 	private void createReadInfoLabel(){
-		this.lblReadInfo = new Label("Info");
+		this.lblReadInfo = new Label(NO_DATA_AVAILABLE);
 		this.flowReadCommands.getChildren().add(lblReadInfo);
 	}
 
