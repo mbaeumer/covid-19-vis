@@ -34,9 +34,7 @@ public class CustomMonitor extends BatchingProgressMonitor {
                 DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
                 now = LocalDateTime.now();
 
-                String formattedDateTime = now.format(formatter);
-                String message = "Status: " + s + " " + i2 + "%";
-                System.out.println(message);
+                String message = "Status: " + s + " " + i + "/" + i1 + " (" + i2 + "%)";
 
                 try {
                     Thread.sleep(10000);
