@@ -269,8 +269,7 @@ public class CovidVisualizer extends Application{
 			@Override
 			protected Void call() throws Exception {
 				try {
-					System.out.println("task running " + Thread.currentThread().getName());
-					gitService.cloneRepository3(configService, lblGitInfo);
+					gitService.cloneRepository(configService, lblGitInfo);
 				} catch (GitAPIException | JGitInternalException e) {
 					actionEvent.consume();
 					try {
@@ -289,7 +288,6 @@ public class CovidVisualizer extends Application{
 		};
 
 		task.setOnSucceeded(wse -> {
-			System.out.println("task succeeded UI " + Thread.currentThread().getName());
 			activateControls();
 		});
 
@@ -471,7 +469,6 @@ public class CovidVisualizer extends Application{
 			@Override
 			public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
 				if (cmbCountries.getSelectionModel().getSelectedItem() != null) {
-					System.out.println("create a graph for " + cmbCountries.getSelectionModel().getSelectedItem());
 					if (radDistributed.isSelected()) {
 						List<DailyCase> dailyCases = dataFilterService.getCasesByCountrySortedByDate(rawCsvData, cmbCountries.getSelectionModel().getSelectedItem());
 						createDistributedTrendGraph(dailyCases);
@@ -497,7 +494,6 @@ public class CovidVisualizer extends Application{
 		cmbCountries.getItems().clear();
 		cmbCountries.getItems().addAll(dataFilterService.getCountryNames(rawCsvData));
 		new ComboBoxAutoComplete<String>(cmbCountries);
-		System.out.println("selected item: " + cmbCountries.getSelectionModel().getSelectedItem());
 		lblReadInfo.setText(cmbCountries.getSelectionModel().getSelectedItem());
 	}
 

@@ -9,9 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CsvReader {
     private List<CsvDataRow> csvDataRowList = new ArrayList<>();
@@ -19,11 +17,6 @@ public class CsvReader {
 
     private DirectoryService directoryService;
 
-    public Map getDataMap() {
-        return dataMap;
-    }
-
-    private Map dataMap = new HashMap<String, List<CsvDataRow>>();
     private int totalLineCount = 0;
     private int totalParseErrors = 0;
     private int totalOutOfBoundErrorCount = 0;

@@ -63,7 +63,6 @@ public class ComboBoxAutoComplete<T> {
         cmb.getTooltip().hide();
         T s = cmb.getSelectionModel().getSelectedItem();
         cmb.getItems().setAll(originalItems);
-        System.out.println("selected: " + s);
         cmb.getSelectionModel().select(s);
     }
 
