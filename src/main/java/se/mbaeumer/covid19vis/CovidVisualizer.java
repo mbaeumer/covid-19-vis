@@ -58,6 +58,9 @@ public class CovidVisualizer extends Application{
 	private Label lblFilterHeadingCompareCountries;
 	private DatePicker datePicker;
 	private ToggleGroup tGroupMetricType;
+	private RadioButton radConfirmed;
+	private RadioButton radRecovered;
+	private RadioButton radDeaths;
 	private Label lblErrorMessage;
 	private ComboBox<String> cmbCountries = new ComboBox<>();
 	private Label lblFilterHeadingShowTrendForCountry;
@@ -135,6 +138,9 @@ public class CovidVisualizer extends Application{
 		this.cmbCountries.setDisable(true);
 		this.radCumulative.setDisable(true);
 		this.radDistributed.setDisable(true);
+		this.radConfirmed.setDisable(true);
+		this.radRecovered.setDisable(true);
+		this.radDeaths.setDisable(true);
 	}
 
 	private void activateControls(){
@@ -145,6 +151,9 @@ public class CovidVisualizer extends Application{
 		this.cmbCountries.setDisable(false);
 		this.radCumulative.setDisable(false);
 		this.radDistributed.setDisable(false);
+		this.radConfirmed.setDisable(false);
+		this.radRecovered.setDisable(false);
+		this.radDeaths.setDisable(false);
 	}
 
 	private void initServices(){
@@ -265,11 +274,13 @@ public class CovidVisualizer extends Application{
 	}
 
 	public void handleCloneEvent(ActionEvent actionEvent){
+		btnClone.setDisable(true);
+		lblGitInfo.setText("Started cloning...");
 		Task<Void> task = new Task<Void>() {
 			@Override
 			protected Void call() throws Exception {
 				try {
-					gitService.cloneRepository(configService, lblGitInfo);
+					gitService.cloneRepository(configService, lblGitInfo, btnClone);
 				} catch (GitAPIException | JGitInternalException e) {
 					actionEvent.consume();
 					try {
@@ -280,9 +291,6 @@ public class CovidVisualizer extends Application{
 					return null;
 				}
 
-				Platform.runLater(() -> {
-					lblGitInfo.setText("Started cloning...");
-				});
 				return null;
 			}
 		};
@@ -378,15 +386,15 @@ public class CovidVisualizer extends Application{
 	private void createMetricsTypeRadioButtons(){
 		this.tGroupMetricType = new ToggleGroup();
 
-		RadioButton radConfirmed = new RadioButton("confirmed");
+		radConfirmed = new RadioButton("confirmed");
 		radConfirmed.setToggleGroup(tGroupMetricType);
 		radConfirmed.setPadding(new Insets(5, 5, 5, 0));
 
-		RadioButton radRecovered = new RadioButton("recovered");
+		radRecovered = new RadioButton("recovered");
 		radRecovered.setToggleGroup(tGroupMetricType);
 		radRecovered.setPadding(new Insets(0, 0, 5, 0));
 
-		RadioButton radDeaths = new RadioButton("deaths");
+		radDeaths = new RadioButton("deaths");
 		radDeaths.setToggleGroup(tGroupMetricType);
 		radRecovered.setPadding(new Insets(0, 0, 5, 0));
 

@@ -1,5 +1,6 @@
 package se.mbaeumer.covid19vis.services;
 
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
@@ -16,11 +17,11 @@ public class GitService {
 
     public static final String DATA_PATH = "/csse_covid_19_data/csse_covid_19_daily_reports/";
 
-    public void cloneRepository(final ConfigService configService, Label label) throws GitAPIException {
+    public void cloneRepository(final ConfigService configService, Label label, Button button) throws GitAPIException {
         cloneCommand = Git.cloneRepository().setURI("https://github.com/CSSEGISandData/COVID-19")
                 .setDirectory(new File(configService.getBaseDataFolder()));
         Git git = cloneCommand
-                .setProgressMonitor(new CustomMonitor(label))
+                .setProgressMonitor(new CustomMonitor(label, button))
                 .call();
     }
 

@@ -2,6 +2,7 @@ package se.mbaeumer.covid19vis.services;
 
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import org.eclipse.jgit.lib.BatchingProgressMonitor;
 
@@ -10,9 +11,11 @@ import java.time.format.DateTimeFormatter;
 
 public class CustomMonitor extends BatchingProgressMonitor {
     private Label label;
+    private Button button;
 
-    public CustomMonitor(Label label) {
+    public CustomMonitor(final Label label, final Button button) {
         this.label = label;
+        this.button = button;
     }
 
     @Override
@@ -57,6 +60,7 @@ public class CustomMonitor extends BatchingProgressMonitor {
             label.textProperty().unbind();
             if (i2 == 100) {
                 label.setText("Successfully cloned the repository");
+                button.setDisable(false);
             }
         });
 
