@@ -34,13 +34,18 @@ public class DataFilterService {
     }
 
     public List<CsvDataRow> getDataForCountry(final List<CsvDataRow> data, String country){
-        return data.stream()
-                .filter(csvDataRow -> country.equals(csvDataRow.getCountry()))
-                .collect(Collectors.toList());
+        List<CsvDataRow> dataForCountry = new ArrayList<>();
+
+        if (data != null && country != null) {
+            dataForCountry = data.stream()
+                    .filter(csvDataRow -> country.equals(csvDataRow.getCountry()))
+                    .collect(Collectors.toList());
+        }
+
+        return dataForCountry;
     }
 
     public Set<String> getCountryNames(List<CsvDataRow> data){
-
         if (data == null){
             Set<String> dummyList = new HashSet<>();
             dummyList.add("No data available");
