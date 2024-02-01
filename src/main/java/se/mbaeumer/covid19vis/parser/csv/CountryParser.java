@@ -25,7 +25,11 @@ public class CountryParser implements RowParser {
         return row;
     }
 
-    private static int getInteger(final String numberString){
-        return numberString == null || numberString.length() == 0 ? 0 : Integer.parseInt(numberString);
+    public static int getInteger(final String numberString){
+        try {
+            return numberString == null || numberString.length() == 0 || numberString.contains(".")  ? 0 : Integer.parseInt(numberString);
+        }catch (NumberFormatException nfe){
+            return 0;
+        }
     }
 }
